@@ -1,0 +1,24 @@
+{
+  "status": "partial_pass",
+  "classification_mode": "fail_closed",
+  "canary_question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "d682f1a2",
+    "gpt4_7f6b06db",
+    "f523d9fe"
+  ],
+  "canary_size": 5,
+  "answered": 4,
+  "answer_surface_hits": 4,
+  "answer_surface_hit_rate": 0.8,
+  "remaining_miss_question_id": "f523d9fe",
+  "remaining_miss_family": "unknown",
+  "remaining_miss_scope": "single-session-assistant",
+  "remaining_miss_reason": "outside_phase_04_5_covered_durable_memory_families",
+  "rerun_readiness": "ready_to_resume_04.1",
+  "notes": [
+    "Phase 04.5 canary proof validates the new deterministic answer-surface path for covered durable-memory families.",
+    "The remaining canary miss is not evidence that the new durable-memory handoff contract failed; it belongs to the still-open Phase 04.1 live rerun scope."
+  ]
+}
