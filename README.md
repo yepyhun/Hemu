@@ -1,9 +1,9 @@
-# Hermes Core2 Memory Kernel Review Mirror
+# Hemu — Core2 Memory Kernel Review Mirror
 
 > Public review mirror of the current Core2 memory-kernel branch.  
 > Not a release build, not a standalone product, and not the main development repo.
 
-This repository is a curated mirror of the **Hermes Core2** memory-kernel work: the current core modules, the related Core2 tests, and the GSD planning / verification trail that explains what was built, what worked, what failed, and why.
+This repository is a curated mirror of the **Hemu / Hermes Core2** memory-kernel work: the current core modules, the related Core2 tests, and the GSD planning / verification trail that explains what was built, what worked, what failed, and why.
 
 The point of this repo is **reviewability**, not polish. It is here so someone can inspect:
 - the current core files
@@ -66,8 +66,8 @@ Tried a bounded retrieval-ranking borrow inside the hybrid seam.
 Locally:
 - green
 
-On the hard residual replay:
-- regressed from `3/38` to `2/38`
+On the separate hard residual replay:
+- the ranking-borrow branch scored `2/38` against an earlier `3/38` reference point
 
 ### v1.4
 
@@ -147,16 +147,6 @@ There are two planning mirrors here:
 - [`.planning/`](./.planning/)  
   A fuller mirrored planning tree copied from the source project for people who want the raw state and milestone history.
 
-### Legacy / design notes
-
-Also mirrored:
-
-- [`plan6.md`](./plan6.md)
-- [`plan7vegrehajt.md`](./plan7vegrehajt.md)
-- [`plan8.md`](./plan8.md)
-
-These are useful mainly as historical design and anti-loop context, not as the current single source of truth.
-
 ---
 
 ## Suggested Reading Order
@@ -215,6 +205,8 @@ This is therefore a **review checkpoint**, not a celebration repo.
 
 ## Reviewer Note: Concrete Experiment Details
 
+_For Nathan and any reviewer who wants actual dataset samples plus evaluation details rather than only architecture prose._
+
 This section is mainly for reviewers who want actual sample questions and a more concrete explanation of how the evaluation was run.
 
 ### What We Actually Evaluate
@@ -256,11 +248,16 @@ After that, the project focused on a hard residual set of `38` previously failin
 
 That set became the main “does this actually move the hard failures?” check.
 
-Important reference points:
-- after bounded hardening (`v1.2` state): `3/38`
-- after bounded retrieval-ranking borrow (`v1.3`): `2/38`
+Important reference points on that **separate hard residual replay**:
+- after bounded hardening (`v1.2` reference state): `3/38`
+- after bounded retrieval-ranking borrow (`v1.3` branch state): `2/38`
 
-That regression is why the ranking path was rolled back in `v1.4`.
+So the ranking result was **not** “the whole hybrid regressed.”
+It means:
+- on the broader frozen comparison, hybrid was still slightly better (`32/70` vs `31/70`)
+- but on the hard residual `38` replay, the ranking-borrow variant underperformed the earlier `3/38` reference and landed at `2/38`
+
+That is why the ranking path was rolled back in `v1.4`.
 
 ### Sample Questions From The Data
 
