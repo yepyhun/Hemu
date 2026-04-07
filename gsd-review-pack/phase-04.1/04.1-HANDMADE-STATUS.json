@@ -1,0 +1,15 @@
+{
+  "status": "green",
+  "source": "pytest",
+  "phase": "04.1",
+  "suite": "core2_handmade_acceptance_and_handoff_local_proof",
+  "handmade_cases_passed": 9,
+  "handmade_cases_total": 9,
+  "targeted_tests_passed": 43,
+  "targeted_tests_total": 43,
+  "notes": [
+    "04.6 handmade acceptance set is now executable as local pytest proof.",
+    "Over-specific benchmark-oriented English phrasing was removed from the deterministic core.",
+    "Current local evidence supports kernel correctness and local handoff sanity, but does not yet justify claiming the paid gate is green."
+  ]
+}

@@ -23,8 +23,8 @@ def test_try_authoritative_answer_resolves_temporal_compare(tmp_path):
 
     assert resolved is not None
     assert resolved["winner"] == "'The Hate U Give'"
-    assert "two weeks ago" in str(resolved["text"])
-    assert "last weekend" in str(resolved["text"])
+    assert str(resolved["text"]) == "Answer: 'The Hate U Give'."
+    assert resolved["answer_surface"]["family"] == "personal_temporal_compare"
 
 
 def test_core2_provider_authoritative_answer_uses_runtime(tmp_path):

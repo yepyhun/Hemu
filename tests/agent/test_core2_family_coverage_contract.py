@@ -48,7 +48,7 @@ def test_preference_family_contract_is_wired_end_to_end():
 
     resolved = try_authoritative_answer(query, packet)
     assert resolved is not None
-    assert "relaxing activities in the evening before 9:30 pm" in str(resolved["text"]).lower()
+    assert "relaxing activities that can be done in the evening before 9:30 pm" in str(resolved["text"]).lower()
     assert "watching tv" in str(resolved["text"]).lower()
 
     runtime.shutdown()
@@ -86,7 +86,9 @@ def test_aggregate_family_contract_is_wired_end_to_end():
     resolved = try_authoritative_answer(query, packet)
     assert resolved is not None
     assert resolved["winner"] == "3"
-    assert str(resolved["text"]) == "Answer: 3."
+    assert str(resolved["text"]).startswith("Answer: 3")
+    assert "food delivery services" in str(resolved["text"])
+    assert resolved["answer_surface"]["structured"]["kind"] == "aggregate_count"
 
     runtime.shutdown()
 
@@ -128,6 +130,8 @@ def test_temporal_family_contract_is_wired_end_to_end():
     resolved = try_authoritative_answer(query, packet)
     assert resolved is not None
     assert resolved["winner"] == "18 days"
-    assert str(resolved["text"]) == "Answer: 18 days."
+    assert str(resolved["text"]).startswith("Answer: 18 days")
+    assert "The Seven Husbands of Evelyn Hugo" in str(resolved["text"])
+    assert resolved["answer_surface"]["structured"]["kind"] == "temporal_elapsed"
 
     runtime.shutdown()

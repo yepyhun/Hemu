@@ -1,0 +1,40 @@
+{
+  "reference_before": {
+    "artifact": ".planning/phases/08.1-invariant-harness-and-noise-repair-import/08.1-HYBRID-RETEST-38-STATUS.json",
+    "passed": 3,
+    "total": 38,
+    "pass_rate": 0.07894736842105263,
+    "failure_patterns": {
+      "prompt_miss": 29,
+      "handoff_format_miss": 4,
+      "judge_artifact": 2,
+      "passed": 3
+    },
+    "promptless_authoritative_cases": 6,
+    "answer_surface_hit_rate": 0.1579
+  },
+  "ranking_borrow_after": {
+    "artifact": ".planning/phases/09-retrieval-ranking-borrow/09-HYBRID-RETEST-38-STATUS.json",
+    "passed": 2,
+    "total": 38,
+    "pass_rate": 0.05263157894736842,
+    "failure_patterns": {
+      "prompt_miss": 30,
+      "handoff_format_miss": 4,
+      "judge_artifact": 2,
+      "passed": 2
+    },
+    "promptless_authoritative_cases": 6,
+    "answer_surface_hit_rate": 0.1579
+  },
+  "delta": {
+    "passed": -1,
+    "pass_rate": -0.02631578947368421,
+    "prompt_miss": 1,
+    "handoff_format_miss": 0,
+    "judge_artifact": 0,
+    "promptless_authoritative_cases": 0,
+    "answer_surface_hit_rate": 0.0
+  },
+  "canonical_conclusion": "Ranking borrow regressed the hard residual 38-case replay and did not change the dominant prompt_miss bucket."
+}

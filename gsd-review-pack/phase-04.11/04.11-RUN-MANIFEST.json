@@ -1,0 +1,64 @@
+{
+  "phase": "04.11",
+  "purpose": "Broader paid validation for the bounded hybrid branch using a frozen comparable 20-question set.",
+  "hybrid_runtime_mode": "on",
+  "benchmark_mode": "core2",
+  "benchmark_fast": true,
+  "sample_size_requested": 20,
+  "question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "d851d5ba",
+    "5d3d2817",
+    "e9327a54",
+    "69fee5aa",
+    "c8c3f81d",
+    "gpt4_7f6b06db",
+    "gpt4_2d58bcd6",
+    "gpt4_70e84552",
+    "f523d9fe",
+    "6c49646a",
+    "9ee3ecd6",
+    "gpt4_18c2b244",
+    "d682f1a2",
+    "6a1eabeb",
+    "c960da58",
+    "09ba9854_abs",
+    "c2ac3c61",
+    "8fb83627"
+  ],
+  "budget_tier_policy": "Use the benchmark harness defaults and graded per-question budget policy already implemented in Core2; do not override question-specific budget behavior during this phase.",
+  "status_artifact_path": ".planning/phases/04.11-hybrid-branch-broader-paid-validation/04.11-STATUS.json",
+  "local_prereq_test_command": "./.venv/bin/python -m pytest tests/agent/test_core2_hybrid_substrate.py tests/agent/test_core2_retrieval_routing.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_handmade_acceptance.py -q",
+  "comparison_baseline_artifact": ".planning/phases/04.1-longmemeval-gate-and-performance-fixes/04.1-GATE-STATUS-20.json",
+  "verdict_thresholds": {
+    "go": {
+      "requires_no_kernel_regressions": true,
+      "min_pass_rate": 0.75,
+      "min_answer_surface_hit_rate": 0.65
+    },
+    "no_go": {
+      "any_kernel_regression": true,
+      "max_pass_rate": 0.6
+    },
+    "mixed": {
+      "otherwise": true
+    }
+  },
+  "verdict_precedence": [
+    "regression",
+    "mixed",
+    "go"
+  ],
+  "stop_rules": [
+    "Do not widen the hybrid seam during validation.",
+    "Do not change question set after the run starts.",
+    "Do not treat retrieval-looking gains as end-to-end success without meeting the locked verdict thresholds.",
+    "Derive the final human-readable verdict from the canonical 04.11-STATUS.json file."
+  ],
+  "notes": [
+    "This phase measures the bounded hybrid branch; it does not authorize new implementation work.",
+    "This manifest is the frozen run contract for 04.11."
+  ]
+}
+

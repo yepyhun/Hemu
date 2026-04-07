@@ -1,0 +1,18 @@
+{
+  "phase": "04.10",
+  "status": "green",
+  "completed_at": "2026-04-07",
+  "default_mode": "on",
+  "rollback_switch": "CORE2_HYBRID_SUBSTRATE_MODE=off",
+  "shadow_mode": "CORE2_HYBRID_SUBSTRATE_MODE=shadow",
+  "targeted_pytest": "32 passed",
+  "full_core2_pytest": "120 passed",
+  "artifacts": [
+    "HYBRID-SUBSTRATE-INTERFACE.md",
+    "HYBRID-RETRIEVAL-TRACES.md",
+    "04.10-01-SUMMARY.md",
+    "04.10-02-SUMMARY.md",
+    "04.10-03-SUMMARY.md",
+    "04.10-VERIFICATION.md"
+  ]
+}

@@ -653,6 +653,88 @@ class Core2Store:
             "metadata": metadata,
         }
 
+    def search_raw_archive(
+        self,
+        query: str,
+        *,
+        max_items: int,
+        namespace_classes: Optional[List[str]] = None,
+        source_first: bool = False,
+        exact_phrase: bool = False,
+    ) -> List[Dict[str, Any]]:
+        assert self._conn is not None
+        raw_tokens = _normalize_search_tokens(query)
+        cleaned = " ".join(raw_tokens)
+        if not cleaned:
+            return []
+        terms = _select_search_terms(raw_tokens)
+        if not terms:
+            return []
+        expanded_terms = _expand_search_terms(terms)
+        namespace_filter = set(namespace_classes or [])
+
+        rows = self._conn.execute(
+            """
+            SELECT * FROM core2_raw_archive
+            ORDER BY created_at DESC
+            """
+        ).fetchall()
+
+        ranked: List[Dict[str, Any]] = []
+        for row in rows:
+            if namespace_filter and row["namespace_class"] not in namespace_filter:
+                continue
+            metadata = _load_json(row["metadata_json"])
+            haystack = " ".join(
+                [
+                    row["namespace"],
+                    row["namespace_class"],
+                    row["source_type"],
+                    row["content"],
+                    str(metadata.get("keywords") or ""),
+                ]
+            ).lower()
+            haystack_tokens = _normalize_search_tokens(haystack)
+            if not haystack_tokens:
+                continue
+            normalized_haystack = " ".join(haystack_tokens)
+            token_counts: Dict[str, int] = {}
+            for token in haystack_tokens:
+                token_counts[token] = token_counts.get(token, 0) + 1
+            base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
+            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            score = (base_hits * 2.0) + (expanded_hits * 0.5)
+            if score <= 0:
+                continue
+            if (source_first or exact_phrase) and len(terms) >= 2 and base_hits <= 0 and expanded_hits < 2:
+                continue
+            if exact_phrase and cleaned in normalized_haystack:
+                score += 5.0
+            if source_first and row["source_type"] in {"document_source", "explicit_memory", "builtin_memory"}:
+                score += 0.8
+            if metadata.get("session_id"):
+                score += 0.2
+            ranked.append(
+                {
+                    "raw_id": row["raw_id"],
+                    "namespace": row["namespace"],
+                    "namespace_class": row["namespace_class"],
+                    "risk_class": row["risk_class"],
+                    "language": row["language"],
+                    "source_type": row["source_type"],
+                    "content": row["content"],
+                    "observed_at": row["observed_at"],
+                    "source_created_at": row["source_created_at"],
+                    "recorded_at": row["recorded_at"],
+                    "created_at": row["created_at"],
+                    "metadata": metadata,
+                    "score": float(score),
+                }
+            )
+
+        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("created_at") or ""), reverse=True)
+        return ranked[:max_items]
+
     def _row_to_canonical(self, row: sqlite3.Row) -> Dict[str, Any]:
         metadata = _load_json(row["metadata_json"])
         return {
@@ -789,6 +871,73 @@ class Core2Store:
             ranked.append(candidate)
 
         ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("updated_at") or ""), reverse=True)
+        return ranked[:max_items]
+
+    def search_turn_archive(
+        self,
+        query: str,
+        *,
+        max_items: int,
+        session_id: str | None = None,
+    ) -> List[Dict[str, Any]]:
+        assert self._conn is not None
+        raw_tokens = _normalize_search_tokens(query)
+        cleaned = " ".join(raw_tokens)
+        if not cleaned:
+            return []
+        terms = _select_search_terms(raw_tokens)
+        if not terms:
+            return []
+        expanded_terms = _expand_search_terms(terms)
+
+        if session_id:
+            rows = self._conn.execute(
+                """
+                SELECT * FROM core2_turns
+                WHERE session_id = ?
+                ORDER BY created_at DESC
+                """,
+                (session_id,),
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                """
+                SELECT * FROM core2_turns
+                ORDER BY created_at DESC
+                """
+            ).fetchall()
+
+        ranked: List[Dict[str, Any]] = []
+        for row in rows:
+            haystack = f"{row['user_content']} {row['assistant_content']}".lower()
+            haystack_tokens = _normalize_search_tokens(haystack)
+            if not haystack_tokens:
+                continue
+            normalized_haystack = " ".join(haystack_tokens)
+            token_counts: Dict[str, int] = {}
+            for token in haystack_tokens:
+                token_counts[token] = token_counts.get(token, 0) + 1
+            base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
+            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            score = (base_hits * 2.0) + (expanded_hits * 0.5)
+            if score <= 0:
+                continue
+            if cleaned in normalized_haystack:
+                score += 4.0
+            user_tokens = set(_normalize_search_tokens(str(row["user_content"] or "")))
+            score += 0.4 * len(user_tokens.intersection(set(terms)))
+            ranked.append(
+                {
+                    "turn_id": row["turn_id"],
+                    "session_id": row["session_id"],
+                    "user_content": row["user_content"],
+                    "assistant_content": row["assistant_content"],
+                    "created_at": row["created_at"],
+                    "score": float(score),
+                }
+            )
+
+        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("created_at") or ""), reverse=True)
         return ranked[:max_items]
 
     def list_records(self, plane_name: str, *, include_inactive: bool = True) -> List[Dict[str, Any]]:

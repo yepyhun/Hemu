@@ -100,6 +100,9 @@ CONVERSATION_REFERENCE_HINTS = {
     "do you remember",
     "remember what",
     "remember which",
+    "remind me",
+    "we talked about",
+    "talked about last time",
     "used as an example",
     "used as example",
 }
@@ -111,6 +114,12 @@ CONVERSATION_REFERENCE_TARGET_HINTS = {
     "title",
     "example",
     "mentioned",
+    "place",
+    "spot",
+    "shop",
+    "restaurant",
+    "dessert",
+    "cafe",
 }
 
 
@@ -178,6 +187,7 @@ def build_route_plan(query: str, *, mode: str | None, operator: Optional[str], r
     query_mode = resolve_query_mode(query_family, requested_mode=mode)
     normalized_query = f" {re.sub(r'[^a-z0-9]+', ' ', (query or '').strip().lower())} "
     personal_compare_temporal = any(hint in normalized_query for hint in PERSONAL_COMPARE_TEMPORAL_HINTS)
+    broader_surface_probe = any(hint in normalized_query for hint in (" in total ", " order ", " instead of ", " need to "))
 
     if query_family == QUERY_FAMILY_EXACT_LOOKUP:
         return Core2RoutePlan(
@@ -250,7 +260,7 @@ def build_route_plan(query: str, *, mode: str | None, operator: Optional[str], r
         query_family=QUERY_FAMILY_FACTUAL_SUPPORTED,
         route_family=ROUTE_FAMILY_SEMANTIC_FIRST,
         query_mode=query_mode,
-        retrieval_cap=min(max_items, 6),
+        retrieval_cap=min(max_items, 8 if broader_surface_probe else 6),
         delivery_view=DELIVERY_VIEW_SUPPORTED_COMPACT,
         notes=["Use bounded semantic-first recall with grounding refs preserved."],
     )

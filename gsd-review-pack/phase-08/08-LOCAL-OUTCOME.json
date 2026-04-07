@@ -1,0 +1,18 @@
+{
+  "phase": "08",
+  "bridge_boundary_artifact": "08-BRIDGE-BOUNDARY.md",
+  "manifest_artifact": "08-BLOCKED-PATH-MANIFEST.json",
+  "proof_commands": {
+    "targeted": "./.venv/bin/python -m pytest tests/agent/test_core2_authoritative_eligibility_bridge.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_hybrid_substrate.py tests/agent/test_core2_handmade_acceptance.py -q",
+    "regression": "./.venv/bin/python -m pytest tests/agent/test_core2_*.py -q"
+  },
+  "route_shift": {
+    "positive_cases_total": 3,
+    "positive_cases_passed": 3,
+    "negative_cases_total": 1,
+    "negative_cases_passed": 1
+  },
+  "regressions_detected": 0,
+  "verdict": "go",
+  "verdict_reason": "The bounded bridge moved all representative covered-family cases into the authoritative path while keeping the lexical negative proof blocked and preserving the wider Core2 regression suite."
+}

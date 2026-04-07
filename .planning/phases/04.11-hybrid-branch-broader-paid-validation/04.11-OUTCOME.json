@@ -1,0 +1,84 @@
+{
+  "phase": "04.11",
+  "raw_status_artifact": "04.11-STATUS.json",
+  "raw_gate_status": "needs_work",
+  "verdict": "go",
+  "verdict_precedence_applied": [
+    "regression",
+    "mixed",
+    "go"
+  ],
+  "verdict_reason": "No kernel regression is visible in the broader hybrid run, pass_rate cleared the locked go threshold, and answer_surface_hit_rate also cleared the locked go threshold.",
+  "locked_thresholds": {
+    "go": {
+      "requires_no_kernel_regressions": true,
+      "min_pass_rate": 0.75,
+      "min_answer_surface_hit_rate": 0.65
+    },
+    "no_go": {
+      "any_kernel_regression": true,
+      "max_pass_rate": 0.6
+    }
+  },
+  "current": {
+    "sample_size_completed": 20,
+    "pass_rate": 0.9,
+    "answer_surface_hit_rate": 0.9,
+    "failure_patterns": {
+      "passed": 18,
+      "prompt_miss": 1,
+      "judge_artifact": 1
+    },
+    "failure_families": {
+      "handoff_format": 1,
+      "judge_artifact": 1
+    },
+    "promptless_authoritative_cases": 18,
+    "avg_total_wall_seconds": 2.926,
+    "avg_conversation_seconds": 1.538,
+    "avg_api_seconds": 1.305
+  },
+  "baseline": {
+    "artifact": "../04.1-longmemeval-gate-and-performance-fixes/04.1-GATE-STATUS-20.json",
+    "pass_rate": 0.6,
+    "answer_surface_hit_rate": 0.5,
+    "failure_patterns": {
+      "passed": 12,
+      "prompt_miss": 8
+    },
+    "failure_families": {
+      "handoff_format": 8
+    },
+    "promptless_authoritative_cases": 10,
+    "avg_total_wall_seconds": 14.301,
+    "avg_conversation_seconds": 8.05,
+    "avg_api_seconds": 7.638
+  },
+  "delta": {
+    "pass_rate": 0.3,
+    "answer_surface_hit_rate": 0.4,
+    "promptless_authoritative_cases": 8,
+    "avg_total_wall_seconds": -11.375,
+    "avg_conversation_seconds": -6.512,
+    "avg_api_seconds": -6.333
+  },
+  "residual_failures": [
+    {
+      "question_id": "e9327a54",
+      "classification": "prompt_miss",
+      "family": "handoff_format",
+      "note": "Residual non-authoritative handoff/prompt formatting miss remained even after broader hybrid improvement."
+    },
+    {
+      "question_id": "09ba9854_abs",
+      "classification": "judge_artifact",
+      "family": "judge_artifact",
+      "note": "Canonical abstention answer remained semantically acceptable but still produced a judge-side unknown outcome."
+    }
+  ],
+  "next_move": {
+    "gsd_command": "/gsd-insert-phase 04.12",
+    "summary": "The hybrid branch earned one more bounded follow-on phase; do not widen beyond the seam or reopen substrate migration generally."
+  }
+}
+

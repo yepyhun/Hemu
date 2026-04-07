@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import re
 from typing import Any, Dict, List, Optional, Tuple
@@ -9,6 +10,7 @@ from agent.core2_authoritative import build_answer_surface
 from agent.core2_digestion import digest_memory_content, digest_turn_content
 from agent.core2_fact_registry import get_covered_fact_spec
 from agent.core2_fact_registry import match_query_to_fact_keys
+from agent.core2_hybrid_substrate import Core2HybridSubstrate
 from agent.core2_maintenance import Core2MaintenanceEngine
 from agent.core2_policy import can_recall_record, classify_namespace
 from agent.core2_routing import build_route_plan, is_conversation_reference_query
@@ -35,9 +37,13 @@ from agent.core2_types import (
 class Core2Runtime:
     """Plane-aware local-first runtime for the Core2 provider."""
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str, *, hybrid_substrate_mode: str | None = None):
         self.db_path = str(Path(db_path))
         self.store = Core2Store(self.db_path)
+        self.hybrid_substrate = Core2HybridSubstrate(
+            self.store,
+            mode=hybrid_substrate_mode or str(os.environ.get("CORE2_HYBRID_SUBSTRATE_MODE") or "on"),
+        )
         self.maintenance = Core2MaintenanceEngine(self.store)
         self._prefetch_cache: Dict[str, str] = {}
         self._session_id = ""
@@ -100,6 +106,12 @@ class Core2Runtime:
         risk_class: str = "standard",
         max_items: int = 6,
     ) -> Core2RecallPacket:
+        normalized_query = f" {re.sub(r'[^a-z0-9]+', ' ', str(query or '').casefold()).strip()} "
+        if max_items < 8 and any(
+            marker in normalized_query
+            for marker in (" in total ", " order ", " instead of ", " first ", " last ", " need to ")
+        ):
+            max_items = 8
         max_items = max(1, min(int(max_items), 12))
         route_plan = build_route_plan(query, mode=mode, operator=operator, risk_class=risk_class, max_items=max_items)
         results = self._retrieve_candidates(query, route_plan=route_plan)
@@ -593,13 +605,35 @@ class Core2Runtime:
         elif self._fact_first_keys_for_query(query, route_plan=route_plan):
             route_plan.notes.append("fact_first_fallback")
 
-        results = self.store.search_canonical(
+        hybrid_results: List[Dict[str, Any]] = []
+        hybrid_trace: Dict[str, Any] = {}
+        if self.hybrid_substrate.enabled:
+            hybrid_results, hybrid_trace = self.hybrid_substrate.search(
+                query,
+                route_plan=route_plan,
+                max_items=route_plan.retrieval_cap,
+                namespace_classes=namespace_classes,
+                source_first=source_first,
+                exact_phrase=exact_phrase,
+            )
+            if int(hybrid_trace.get("raw_hits") or 0) > 0:
+                route_plan.notes.append("hybrid_raw_hit")
+            if int(hybrid_trace.get("turn_hits") or 0) > 0:
+                route_plan.notes.append("hybrid_turn_hit")
+            if self.hybrid_substrate.shadow_only:
+                route_plan.notes.append("hybrid_shadow_only")
+
+        lexical_results = self.store.search_canonical(
             query,
             max_items=route_plan.retrieval_cap,
             namespace_classes=namespace_classes,
             source_first=source_first,
             exact_phrase=exact_phrase,
         )
+        results = lexical_results
+
+        if hybrid_results and not self.hybrid_substrate.shadow_only:
+            results = self._merge_ranked_candidates(hybrid_results, lexical_results, limit=route_plan.retrieval_cap)
 
         if fact_results:
             merged: List[Dict[str, Any]] = []
@@ -637,6 +671,37 @@ class Core2Runtime:
             results = expanded[: route_plan.retrieval_cap]
 
         return results
+
+    @staticmethod
+    def _merge_ranked_candidates(
+        primary: List[Dict[str, Any]],
+        secondary: List[Dict[str, Any]],
+        *,
+        limit: int,
+    ) -> List[Dict[str, Any]]:
+        best_by_id: Dict[str, Dict[str, Any]] = {}
+        for record in list(primary):
+            object_id = str(record.get("object_id") or "")
+            if not object_id:
+                continue
+            best_by_id[object_id] = dict(record)
+
+        for record in list(secondary):
+            object_id = str(record.get("object_id") or "")
+            if not object_id:
+                continue
+            current = best_by_id.get(object_id)
+            if current is None:
+                best_by_id[object_id] = dict(record)
+                continue
+            current["score"] = max(float(current.get("score", 0.0)), float(record.get("score", 0.0)))
+
+        merged = sorted(
+            best_by_id.values(),
+            key=lambda item: (float(item.get("score", 0.0)), item.get("updated_at") or ""),
+            reverse=True,
+        )
+        return merged[:limit]
 
     def _expand_conversation_reference_candidates(
         self,

@@ -1,0 +1,22 @@
+{
+  "status": "go",
+  "rollback_active": true,
+  "ranking_active_in_hybrid_path": false,
+  "preserved_hardening": [
+    "invariants",
+    "noise_repair",
+    "bounded_hybrid_substrate"
+  ],
+  "targeted_proof": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_hybrid_candidate_ordering.py tests/agent/test_core2_hybrid_substrate.py -q",
+    "result": "7 passed in 0.36s"
+  },
+  "wider_regression": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_*.py -q",
+    "result": "133 passed in 14.30s"
+  },
+  "notes": [
+    "Ranking is retired from active hybrid ordering.",
+    "Rollback kept the hybrid seam and prior hardening intact."
+  ]
+}

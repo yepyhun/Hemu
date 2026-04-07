@@ -1,0 +1,23 @@
+{
+  "phase": "08.1",
+  "verdict": "go",
+  "invariants_imported": 3,
+  "targeted_proof": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_invariant_harness.py tests/agent/test_core2_handmade_acceptance.py -q",
+    "result": "13 passed in 3.20s"
+  },
+  "wider_regression": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_*.py -q",
+    "result": "129 passed in 13.44s"
+  },
+  "noise_repair_fixture_summary": {
+    "issues_found": 2,
+    "records_repaired": 2
+  },
+  "regressions_detected": 0,
+  "notes": [
+    "The imported invariant set remained intentionally small.",
+    "Noise repair stayed explicit and narrow.",
+    "No retrieval-ranking or comparator borrow occurred in this phase."
+  ]
+}

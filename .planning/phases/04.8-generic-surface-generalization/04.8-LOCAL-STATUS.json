@@ -1,0 +1,36 @@
+{
+  "phase": "04.8",
+  "status": "green",
+  "proof": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_handmade_acceptance.py tests/agent/test_core2_longmemeval_benchmark.py -q",
+    "result": "passed",
+    "passed": 48,
+    "failed": 0
+  },
+  "surface_precedence": [
+    "existing_promptless_surface",
+    "new_generic_surface",
+    "fail_closed_fallback"
+  ],
+  "failed_cluster_mapping": {
+    "aggregate_total_or_threshold": [
+      "d851d5ba",
+      "9ee3ecd6",
+      "c960da58",
+      "c2ac3c61",
+      "8fb83627"
+    ],
+    "event_order_or_temporal_compare": [
+      "gpt4_70e84552",
+      "gpt4_18c2b244"
+    ],
+    "canonical_abstention": [
+      "09ba9854_abs"
+    ]
+  },
+  "negative_proof": "passed",
+  "rerun_trigger": {
+    "broader_paid_rerun_justified": true,
+    "reason": "The failed cluster is green locally without comparator expansion or topic-family growth."
+  }
+}

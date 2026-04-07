@@ -303,6 +303,7 @@ class Core2AnswerSurface:
     mode: str
     answer_mode: str | None = None
     text: str | None = None
+    structured: Dict[str, Any] = field(default_factory=dict)
     summary: str | None = None
     support_tier: str | None = None
     confidence_tier: str | None = None

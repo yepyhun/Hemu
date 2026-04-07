@@ -1,0 +1,79 @@
+{
+  "name": "core2_handmade_acceptance_v1",
+  "purpose": "Small local directional proof before paid external gate reruns",
+  "pass_rule": [
+    "expected_answer_or_abstention_matches",
+    "expected_structured_support_present",
+    "no_hidden_benchmark_specific_interpretation_needed"
+  ],
+  "rerun_trigger_rule": [
+    "handmade_set_green",
+    "change_mapped_to_explicit_blocker_class",
+    "expected_gate_effect_is_clear"
+  ],
+  "cases": [
+    {
+      "id": "attribute_current",
+      "family": "personal_attribute",
+      "query_shape": "What is my current occupation?",
+      "expected": "direct_answer_from_current_structured_fact",
+      "expected_path": "fact_first_to_answer_surface"
+    },
+    {
+      "id": "attribute_updated",
+      "family": "temporal_update",
+      "query_shape": "Where do I live now?",
+      "expected": "current_value_with_previous_still_inspectable",
+      "expected_path": "deterministic_supersession_to_fact_first"
+    },
+    {
+      "id": "preference_evening",
+      "family": "preference",
+      "query_shape": "What do I prefer in the evening?",
+      "expected": "bounded_preference_answer_from_structured_facts",
+      "expected_path": "fact_first_to_answer_surface"
+    },
+    {
+      "id": "routine_before_bed",
+      "family": "habit_routine",
+      "query_shape": "What do I usually do before bed?",
+      "expected": "compact_routine_answer_from_structured_memory",
+      "expected_path": "fact_first"
+    },
+    {
+      "id": "collection_total_update",
+      "family": "collection_count",
+      "query_shape": "How many items are in my collection now?",
+      "expected": "updated_total_from_structured_aggregate_state",
+      "expected_path": "update_materialization_to_fact_first"
+    },
+    {
+      "id": "temporal_before_after",
+      "family": "temporal_update",
+      "query_shape": "Which happened first?",
+      "expected": "bounded_temporal_answer_from_structured_event_anchors",
+      "expected_path": "structured_temporal_facts"
+    },
+    {
+      "id": "conflict_case",
+      "family": "conflict_supersession",
+      "query_shape": "What is the current truth here?",
+      "expected": "explicit_conflict_or_safe_abstention",
+      "expected_path": "conflict_state_or_abstention"
+    },
+    {
+      "id": "abstention_case",
+      "family": "abstention",
+      "query_shape": "covered_question_without_enough_support",
+      "expected": "abstain_or_explicit_fallback",
+      "expected_path": "fail_closed_surface"
+    },
+    {
+      "id": "handoff_sensitive_case",
+      "family": "covered_handoff",
+      "query_shape": "covered_case_sensitive_to_final_handoff",
+      "expected": "correct_answer_with_clear_structured_support",
+      "expected_path": "fact_first_to_answer_surface_to_clean_handoff"
+    }
+  ]
+}

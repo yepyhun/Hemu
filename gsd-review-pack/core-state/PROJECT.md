@@ -2,74 +2,73 @@
 
 ## What This Is
 
-Hermes Core2 is a new modular memory kernel for Hermes Agent, implemented inside the existing brownfield repo as a first-class memory provider rather than an ad hoc patch set. It aims to replace the current weak-memory path with a source-grounded, retrieval-disciplined, benchmarkable kernel that can serve personal memory, workspace/project memory, library knowledge, and high-risk domains under explicit trust and evidence rules.
-
-The immediate audience is Hermes itself and the user operating Hermes as a serious second-brain and agent runtime. The target is not an MVP memory stub, but a production-grade kernel with clear proof gates and upstream-friendly wiring.
+Hermes Core2 is a deterministic memory kernel for durable user facts, temporal state, and fail-closed answer delivery. It is not just a retrieval layer: the core value is stable fact identity, provenance, supersession/conflict handling, abstention, and provider-owned authoritative answers.
 
 ## Core Value
 
-If everything else degrades, Core2 must still return source-grounded, correctly scoped memory under explicit abstention and confidence rules instead of bluffing.
+Build a memory system that is honest, deterministic where it matters, and strong enough to support real long-horizon recall without collapsing into benchmark-only tuning.
+
+## Current State
+
+`v1.0` is the archived shipped baseline. `v1.1` established the bounded hybrid branch, measured it honestly against the baseline on a frozen broader set, and reduced the forward work to one leverage bet: an authoritative-eligibility bridge for already-covered families. `v1.2` verified that bridge locally and added bounded hardening through explicit invariants and narrow noise repair. `v1.3` completed a bounded retrieval-ranking borrow for the hybrid path, but the fresh paid residual replay regressed from `3/38` to `2/38`. `v1.4` retired that ranking path from the active hybrid route and recorded a canonical postmortem. There is currently no active milestone.
+
+## Current Milestone
+
+No active milestone.
+
+**Next milestone should decide whether to pursue the carried-forward `Covered-Family Prompt Delivery Bridge` recommendation or another single bounded mechanism.**
 
 ## Requirements
 
 ### Validated
 
-- ✓ Hermes already supports a modular agent/runtime split with tool registry, toolsets, CLI, and gateway entry points — existing
-- ✓ Hermes already has a memory provider abstraction with lifecycle hooks and plugin discovery under `plugins/memory/` — existing
-- ✓ Hermes already has built-in persistent curated memory plus external provider plumbing — existing
-- ✓ Hermes already has broad automated coverage across agent, gateway, ACP/MCP, and memory-provider flows — existing
-- ✓ Phase 1 established Core2 as a loadable Hermes memory provider with isolated `agent/core2_*` modules, stable lifecycle wiring, and active foundation tests — Phase 1
-- ✓ Phase 2 established explicit planes, namespace/trust policy, temporal/versioning semantics, and local state-transition/maintenance logic — Phase 2
-- ✓ Phase 3 established explicit routing, typed answer contracts, abstention behavior, delivery-view discipline, and active retrieval-contract tests — Phase 3
-- ✓ Phase 4 established manager-level E2E proof, broader hardening regressions, structured proof harnesses, and honest release-readiness evidence — Phase 4
-- ✓ Phase 04.2 established bounded write-time fact digestion, current/previous fact canonicalization, and compact recall-ready fact artifacts — Phase 04.2
-- ✓ Phase 04.3 established fact-first recall for covered durable-memory queries with inspectable fallback behavior and aligned authoritative answers — Phase 04.3
-- ✓ Phase 04.4 established structural coverage for the previously missing durable-memory families: preference/habit/routine, aggregate/count, and bounded temporal-summary — Phase 04.4
-- ✓ Phase 04.5 established deterministic provider-owned answer surfaces, provider-first handoff shaping, and fail-closed machine-readable gate classification — Phase 04.5
+- `QUAL-04` archived in `v1.0` — paid `10/10` Hermes-path baseline accepted
+- `REL-01` validated in `v1.1/05` — comparison protocol locked before broader evaluation
+- `QUAL-11` validated in `v1.1/06` — frozen `70`-sample baseline vs hybrid comparison completed honestly
+- `QUAL-12` validated in `v1.1/06` — canonical comparison outcome recorded without threshold-moving
+- `QUAL-13` validated in `v1.1/07` — breakthrough search reduced to one bounded next direction
+- `FUT-13` validated in `v1.1/07` — dominant blocked path mapped at mechanism level
+- `FUT-14` validated in `v1.1/07` — explicit stop rule prevents reopening micro-benchmark loops
+- `RETR-12` validated in `v1.2/08` — already-covered family evidence now crosses the bounded authoritative eligibility bridge
+- `QUAL-14` validated in `v1.2/08` — bounded falsification slice shows route-shift without comparator softening or benchmark phrasing changes
+- `REL-03` validated in `v1.2/08` — rollback simplicity and deterministic-core ownership remain intact
+- `QUAL-15` validated in `v1.2/08.1` — Core2 now encodes a bounded invariant catalog and repeatable acceptance checks instead of relying on benchmark results alone
+- `REL-04` validated in `v1.2/08.1` — explicit noise repair rejects obvious tool/file error artifacts without widening the truth model
+- `RETR-13` validated in `v1.3/09` — bounded retrieval-ranking signals now influence hybrid candidate ordering
+- `QUAL-16` validated in `v1.3/09` — ranking borrow stayed inside the planned seam without comparator, family, or truth-model growth
+- `REL-05` validated in `v1.3/09` — the hybrid ranking borrow remains reversible and locally measurable
 
 ### Active
 
-- [ ] Run the paid LongMemEval-10 Hermes-path evaluation as the final external benchmark gate before making a stronger benchmark or SOTA claim.
+- none; waiting for the next milestone definition
 
 ### Out of Scope
 
-- Rewriting the whole Hermes runtime outside the memory boundary — the repo already has the right abstraction seam, so Core2 should integrate through providers and thin native wiring.
-- Model-only or direct-API benchmarking outside Hermes runtime flow — the benchmark target is the real Hermes kernel path, not a disconnected baseline.
-- Multiple simultaneously active external memory kernels in the first delivery — current Hermes provider architecture assumes one external provider at a time.
+- New broad benchmark comparison phases until the local bridge hypothesis is built and falsified
+- Wholesale substrate replacement or reopening the MemPalace adoption decision
+- New family spam, comparator growth, or benchmark-specific wording patches
 
 ## Context
 
-This is a brownfield initialization inside `/home/lauratom/Asztal/ai/hermes-agent-core2`. The codebase already contains a large multi-platform agent system with CLI, gateway transports, a self-registering tool architecture, and a modular memory-provider contract in `agent/memory_provider.py` and `plugins/memory/`.
-
-The architectural target is driven primarily by `plan7vegrehajt.md`, with `plan6.md` acting as the constitution of hard laws, invariants, anti-loop rules, and proof standards. The desired outcome is a SOTA-competitive memory kernel for Hermes, not a partial experiment or placeholder implementation.
-
-The codebase map in `.planning/codebase/` shows the safe integration path clearly: keep Core2 logic in isolated modules, minimize business logic in `run_agent.py` and `gateway/run.py`, preserve lifecycle hooks, and extend tests around provider behavior, compression, delegation, and gateway/session flows.
+The main lesson from `v1.1` was that the bounded hybrid branch was directionally better than the baseline, but the gain did not cross into the authoritative answer path often enough. `v1.2` closed that local bridge hypothesis cleanly on a bounded falsification slice and then hardened the path with explicit invariants and narrow noise repair. `v1.3` translated the next bounded bet into code: better candidate ordering now exists locally as a ranking borrow inside the hybrid retrieval seam, without reopening the substrate or truth model. The fresh paid replay on the hard residual `38` showed that this was not the breakthrough: the result regressed from `3/38` to `2/38`, with `prompt_miss` still dominating. `v1.4` retired that failed ranking path cleanly and left one bounded carry-forward recommendation: `Covered-Family Prompt Delivery Bridge`.
 
 ## Constraints
 
-- **Architecture**: Keep Core2 modular and upstream-friendly — isolate business logic in new modules/providers and keep native Hermes files limited to thin wiring.
-- **Correctness**: Source-grounded truth and retrieval discipline are mandatory — unsupported claims must abstain rather than guess.
-- **Benchmarking**: Proof and evaluation must run through the full Hermes kernel/memory/runtime path — not raw model APIs.
-- **Compatibility**: Preserve existing CLI, gateway, and provider lifecycle behavior where possible — Hermes is already multi-entry-point and regression-sensitive.
-- **Quality**: Verification is required, not optional — plan checking, verifier usage, and proof ladders are part of the project definition.
+- Keep the deterministic core contract intact
+- Do not reopen broad benchmark loops casually; any future rerun should belong to a fresh milestone decision
+- Prefer one bounded high-leverage mechanism over many small case-wise fixes
+- Keep the hybrid branch reversible if the ranking borrow fails
+- Do not preserve ranking borrow in the active path just because it was locally green; broader residual evidence wins
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Build Core2 as a modular Hermes memory provider, not as scattered runtime patches | The repo already exposes a provider/plugin boundary and this minimizes merge debt | Validated in Phase 1 |
-| Use `plan7vegrehajt.md` as the primary execution spec | It is the most complete product and systems contract for Core2 | Used for initialization and Phase 1 execution |
-| Use `plan7vegrehajt.md` as the primary Phase 2 product contract, with `plan6.md` as execution guardrails | Plan 7 gives the concrete planes/temporal/state model; plan 6 constrains anti-shortcut execution behavior | Applied in Phase 2 |
-| Make query family, answer type, and delivery view explicit Core2 contract data | Retrieval and answer behavior must be inspectable inside Core2, not improvised at the provider edge | Validated in Phase 3 |
-| Keep the paid LongMemEval-10 run as the final external gate | Local proof can be green without pretending the final benchmark already happened | Applied in Phase 4 |
-| Stop extending query-time heuristics and move common durable-memory truth-building into write-time digestion | Phase 04.1 exposed a structural raw-blob bottleneck; more surface heuristics would repeat the old kernel failure mode | Applied in Phase 04.2 |
-| Make covered recall fact-first with safe raw fallback | After Phase 04.2, the missing architectural step is to consume the new fact substrate directly instead of hoping broad canonical search will surface it first | Validated in Phase 04.3 |
-| Model the still-uncovered durable-memory families before returning to the final live gate | The paid gate now points to a bounded structural coverage gap, not a reason to keep patching 04.1 blindly | Validated in Phase 04.4 |
-| Narrow the final answer handoff to a deterministic provider-owned surface before resuming the live gate | The dominant remaining failure family is prompt drift/handoff mismatch, not missing memory families, so the next structural move is to tighten the provider-to-answer boundary | Validated in Phase 04.5 |
-| Keep the final gate fail-closed and machine-readable, including `unknown` and a frozen canary set | The project was drifting toward prose-only “almost done” judgments; mechanical blocker classification keeps the finish line explicit | Applied in Phase 04.5 |
-| Use coarse phase granularity with parallel execution | The project is large but conceptually divisible into a few coherent milestones | Validated by roadmap and Phase 1 planning |
-| Keep planning docs tracked in git | This is substantial architectural work and should remain visible and reviewable | Applied locally; commit still blocked by missing repo-local git identity |
-| Skip domain research for init, but keep researcher/plan-check/verifier enabled for phase work | The user already provided the governing design documents, but execution quality gates still matter | Applied during initialization and Phase 1 |
+- `v1.0` remains the archived shipped baseline and reference point
+- `v1.1` selected the hybrid branch as the pragmatic forward path while keeping the broader comparison verdict honest (`mixed_hold`)
+- `v1.2` was a bounded build milestone around authoritative eligibility for already-covered families plus local hardening imports
+- `v1.3` used retrieval-ranking borrow as the next bounded forward direction rather than reopening multiple borrow threads at once
+- `v1.3/09` landed the ranking borrow locally and left the next broader check for a later milestone, not as an inline continuation
+- `v1.4` starts from the broader residual replay truth: ranking borrow did not improve the hard `38` set and should be rolled back from the active path before any new forward bet
+- `v1.4/10` completed that rollback and recorded `Covered-Family Prompt Delivery Bridge` as the single carried-forward recommendation
 
 ## Evolution
 
@@ -88,5 +87,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
----
-*Last updated: 2026-04-06 after Phase 04.5 execution*
+*Last updated: 2026-04-08 after completing milestone v1.4*

@@ -1,0 +1,18 @@
+{
+  "phase": "string",
+  "bridge_boundary_artifact": "string",
+  "manifest_artifact": "string",
+  "proof_commands": {
+    "targeted": "string",
+    "regression": "string"
+  },
+  "route_shift": {
+    "positive_cases_total": "number",
+    "positive_cases_passed": "number",
+    "negative_cases_total": "number",
+    "negative_cases_passed": "number"
+  },
+  "regressions_detected": "number",
+  "verdict": "go | hold | stop",
+  "verdict_reason": "string"
+}

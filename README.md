@@ -1,166 +1,334 @@
-# Hemu — A Distilled Long-Term Memory Kernel
+# Hermes Core2 Memory Kernel Review Mirror
 
-> **⚠️ Public review repository — not an MVP, not a release.** This is a snapshot of the kernel architecture and planning documents, shared for external review and discussion.
+> Public review mirror of the current Core2 memory-kernel branch.  
+> Not a release build, not a standalone product, and not the main development repo.
 
-> *A second-brain memory kernel for AI agents — built around engram-style knowledge graphs, temporal decay, and structured truth. Designed to handle 5,000+ books, not just chat history.*
+This repository is a curated mirror of the **Hermes Core2** memory-kernel work: the current core modules, the related Core2 tests, and the GSD planning / verification trail that explains what was built, what worked, what failed, and why.
 
-**Hemu** is an experimental long-term memory kernel for AI agents. It is a complete ground-up rewrite — not a wrapper, not an integration layer, not another vector store with a thin API on top. It is a minimal, disciplined memory engine that knows the difference between *what was true*, *what is true now*, and *what it cannot reliably answer*.
+The point of this repo is **reviewability**, not polish. It is here so someone can inspect:
+- the current core files
+- the milestone / phase history
+- the benchmark-facing decisions
+- the architectural dead ends that were explicitly rolled back
 
-Built primarily for [Hermes Agent](https://github.com/NousResearch/hermes-agent), but designed modular enough to plug into any agent runtime.
-
----
-
-## Why This Exists
-
-Most agent memory systems start clean and become unmaintainable fast. You add chat history. Then semantic search. Then a knowledge graph. Then a summary cache. Then a conflict resolver. Then a fallback for when the resolver is wrong. Before long you have a Frankenstein stack of partial solutions, each half-working, patched together until no one can reason about what the agent actually *believes*.
-
-The previous version of this system hit exactly that wall — ~30,000 lines across 70+ modules. Unfixable.
-
-**Hemu is the compression.** Not a union of those ideas. A distillation of what was actually worth keeping, into ~6,800 lines across 13 modules.
+No secrets or API keys are included here.
 
 ---
 
-## The Core Idea
+## What Core2 Is
 
-Hemu synthesizes ideas from four research directions in memory systems:
+Core2 is a **deterministic memory kernel** for durable facts and temporal state inside an agent runtime.
 
-| Inspiration | What we took |
-|---|---|
-| [**Mem0**](https://github.com/mem0ai/mem0) | Extract / consolidate / retrieve separation; local-first persistence |
-| [**MemU**](https://github.com/Bai-YT/MemoryOS) | Write-time intelligence, query-time stays cheap and fast |
-| [**PLUR**](https://plurresearch.com/) | Engram-style atomic memory units; hit/miss/feedback loops; temporal validity gates |
-| [**CatRAG**](https://github.com/kwunhang/CatRAG) | Query-aware routing; completeness discipline — not just nearest-match retrieval |
-| [**Graphiti**](https://github.com/getzep/graphiti) | Temporal knowledge graph design; bi-temporal edge modeling; entity resolution across sessions |
+The main design goal is not “better retrieval” in isolation. The goal is:
+- stable memory objects
+- provenance and source traceability
+- current / previous / superseded state
+- conflict handling
+- fail-closed answer behavior
+- explicit abstention when support is insufficient
 
-On top of these, Hemu adds a **bitemporal truth model** (when did this happen vs. when did the system learn it), explicit **supersession and conflict tracking**, and **knowledge graph-inspired activation** — memory units decay in relevance over time, and strong evidence promotes them back.
-
-The result is something closer to how a second brain actually works than a chat log with embeddings.
+The intended user experience is that the system remembers in the background and keeps itself consistent, instead of re-reasoning from raw history every time.
 
 ---
 
-## What Makes It Different
+## What The Project Learned So Far
 
-### 1. Truth flows in one direction
+The development history matters here because the repo is not just a code dump; it is a trail of hypotheses that were tried and measured.
 
-```
-Raw Archive → Canonical Truth → Derived Propositions → Retrieval Indices → Delivery Views
-```
+### v1.0
 
-No circular reads. No "query the raw archive as a fallback." Each plane has a defined job and is not allowed to do the job of the plane above it.
+Established the shipped baseline:
+- deterministic kernel path
+- paid Hermes-path `10/10` baseline acceptance
 
-### 2. Routing is decided by the *question*, not the data
+### v1.1
 
-Seven query families — `exact_lookup`, `factual_supported`, `personal_recall`, `relation_multihop`, `update_resolution`, `high_risk_strict`, `exploratory_discovery` — each gets its own retrieval strategy, evidence requirements, and abstention policy. The router decides upfront. It does not try everything and pick the best-looking result.
+Tested the bounded hybrid branch against the baseline on a broader frozen set:
+- baseline: `31/70`
+- hybrid: `32/70`
+- verdict: directionally better, but not enough for automatic promotion
 
-### 3. Token savings are not a trade-off against accuracy
+### v1.2
 
-This is the part that actually matters for second-brain usage.
+Tried the next bounded breakthrough ideas:
+- authoritative eligibility bridge
+- invariants / acceptance harness
+- narrow noise repair
 
-Most memory systems that claim token efficiency get there by **compressing truth** — shorter answers, fewer grounding refs, less evidence. Hemu gets there through **write-time intelligence**: the expensive understanding happens at ingestion time, in the background, asynchronously. By query time, the kernel hands back a structured typed answer — `canonical_value`, `grounding_refs`, `support_level`, `confidence_tier` — instead of a raw evidence blob that the LLM has to synthesize again.
+Result:
+- useful hardening
+- no decisive breakthrough on the hard residual failures
 
-In compact mode on short personal recall queries: **≥60% token savings** vs. replay-heavy baselines.  
-In long synthesis scenarios: **≥90% savings**.  
-Accuracy: higher, not lower — because the kernel knows when to abstain.
+### v1.3
 
-### 4. Tool-calling becomes cache-stable
+Tried a bounded retrieval-ranking borrow inside the hybrid seam.
 
-One of the biggest hidden token costs in agentic systems is tool schema churn: sending the full tool list with every turn to maintain continuity. Hemu uses stable `tool_profile` objects and artifact-first rehydration — the agent refers to an artifact ID instead of re-serializing the full tool output into the prompt on every turn.
+Locally:
+- green
 
-### 5. It knows when to say "I don't know"
+On the hard residual replay:
+- regressed from `3/38` to `2/38`
 
-Abstention is not a fallback. It is a first-class output. High-risk namespaces (medical, legal) have mandatory abstention policies. If temporal validity is unclear, if there's an unresolved conflict, if the evidence chain for a multi-hop query is incomplete — the kernel says so explicitly, rather than hallucinating confidence.
+### v1.4
 
----
+Rolled the failed ranking path back out of the active hybrid route and wrote the postmortem instead of pretending the experiment was still promising.
 
-## Architecture at a Glance
+Current carry-forward recommendation:
+- **Covered-Family Prompt Delivery Bridge**
 
-```
-core2_store.py          ← SQLite persistence, 5-plane schema, BM25-style search
-core2_types.py          ← All constants, data classes, budget profiles (the "type constitution")
-core2_routing.py        ← Query family classification and route plan selection
-core2_policy.py         ← Namespace, risk class, support level, state classification
-core2_digestion.py      ← Write-time fact extraction from conversation turns
-core2_fact_registry.py  ← Covered fact families and canonical identity tracking
-core2_authoritative.py  ← Structured answer surface construction
-core2_runtime.py        ← Main orchestrator — retrieval, scoring, abstention
-core2_answer.py         ← Typed answer packet assembly
-core2_maintenance.py    ← Background dedupe, conflict detection, decay
-```
-
-**~6,800 lines. 13 modules. One person can hold it in their head.**
+There is currently **no active milestone** in the mirrored planning state.
 
 ---
 
-## Current Status
+## What Seems To Work
 
-The kernel has completed **7 hardening phases** (04.1 → 04.7):
+From the current milestone history and local proof work, the project has reasonably solid evidence for:
 
-| Phase | What happened | Status |
-|---|---|---|
-| 04.1 | LongMemEval gate baseline + performance fixes | ✅ |
-| 04.2 | Write-time fact digestion | ✅ |
-| 04.3 | Fact-first recall routing | ✅ |
-| 04.4 | Uncovered durable memory families | ✅ |
-| 04.5 | Deterministic answer surface + gate closure | ✅ |
-| 04.6 | Core axioms, handmade acceptance set, gate matrix | ✅ |
-| 04.7 | Authoritative gate compatibility (promptless answers) | ✅ |
-
-**Phase 04.7 results:**
-- `38 passed` in local test suite
-- `5/5` canary cases green
-- Promptless authoritative path: **0 LLM API calls, 100% answer surface hit rate**
-
-**Next:** Full paid LongMemEval rerun (Phase 04.1 resumed).
+- deterministic fact/state handling in covered cases
+- provenance-aware memory objects
+- supersession / conflict-aware state transitions
+- fail-closed answer behavior and abstention contracts
+- bounded hybrid retrieval seam
+- explicit invariants and acceptance-style hardening
 
 ---
 
-## 🙏 Looking for Feedback — Can You Help?
+## Where It Is Still Blocked
 
-I am not a traditional developer. I am a vibe-coder: I design, research, and instruct LLMs to build. This entire kernel was designed through careful planning documents, hard laws, and iterative AI-assisted implementation.
+The main unresolved issue is not “can it store facts at all?”
 
-The architecture is mine. The code came from that architecture. But I need external eyes on whether the direction is actually sound before I keep going.
+The harder problem is this:
 
-**If you are a senior developer, AI/ML engineer, or someone who has built agent memory systems — I would genuinely appreciate your input on:**
+- improvements in retrieval or internal structure do not reliably become better final answers
+- the remaining hard failures are still dominated by **prompt-path / delivery-path misses**
+- some ideas are locally correct and still not globally decisive
 
-1. **Is the core concept viable?** Five-plane unidirectional data flow, write-time intelligence, typed answer contracts with hard token budgets — does this hold up architecturally, or are there structural issues I am not seeing?
+In other words: the project has already learned several things that are **not** the breakthrough.
 
-2. **Is this worth continuing?** The ambition is real: engram-style knowledge graphs, temporal decay, 5,000+ book corpus support, multilingual-neutral core. Is there a credible path here, or does this kind of project collapse under its own weight in practice?
+That is why the planning trail is included here. The negative results matter.
 
-3. **How do you keep an LLM from drifting on a project like this?** The biggest challenge working this way is preventing the AI from patching instead of replacing, layering instead of compressing, and optimizing for the benchmark instead of the real use case. The `plan6.md` and `plan7vegrehajt.md` files are my attempt at guardrails. Are they the right kind?
+---
 
-4. **Where would you look first?** If you read through `core2_routing.py` and `core2_runtime.py` and spotted a problem — I want to know. Specific feedback is more valuable than general impressions.
+## What Is In This Mirror
 
-Feel free to open an issue or reach out.
+### Current core modules
+
+Both the repo root and [`agent/`](./agent/) contain the current mirrored Core2 files, including:
+
+- `core2_answer.py`
+- `core2_answer_surface.py`
+- `core2_authoritative.py`
+- `core2_digestion.py`
+- `core2_fact_registry.py`
+- `core2_hybrid_substrate.py`
+- `core2_invariants.py`
+- `core2_longmemeval_benchmark.py`
+- `core2_maintenance.py`
+- `core2_noise_repair.py`
+- `core2_policy.py`
+- `core2_proof_harness.py`
+- `core2_ranking.py`
+- `core2_routing.py`
+- `core2_runtime.py`
+- `core2_store.py`
+- `core2_types.py`
+
+### Current Core2 tests
+
+See [`tests/agent/`](./tests/agent/) for the mirrored `test_core2_*` suite.
+
+### GSD / planning artifacts
+
+There are two planning mirrors here:
+
+- [`gsd-review-pack/`](./gsd-review-pack/)  
+  Curated public review pack with mirrored core-state, phase snapshots, references, and milestone archives.
+
+- [`.planning/`](./.planning/)  
+  A fuller mirrored planning tree copied from the source project for people who want the raw state and milestone history.
+
+### Legacy / design notes
+
+Also mirrored:
+
+- [`plan6.md`](./plan6.md)
+- [`plan7vegrehajt.md`](./plan7vegrehajt.md)
+- [`plan8.md`](./plan8.md)
+
+These are useful mainly as historical design and anti-loop context, not as the current single source of truth.
 
 ---
 
 ## Suggested Reading Order
 
-| Document | Purpose |
-|---|---|
-| [`plan7vegrehajt_EN.md`](./plan7vegrehajt_EN.md) | Full product contract — what the kernel must be, and what it must never become |
-| [`plan6_EN.md`](./plan6_EN.md) | Anti-loop constitution — how to avoid the Frankenstein trap |
-| [`core2_types.py`](./core2_types.py) | The type system — understand budget profiles and answer contracts first |
-| [`core2_routing.py`](./core2_routing.py) | 229 lines — the clearest entry point into how routing decisions work |
-| [`core2_runtime.py`](./core2_runtime.py) | The main orchestrator — follow one query through the system |
+If you want the shortest path to understanding the current state, read this order:
+
+1. [`gsd-review-pack/core-state/PROJECT.md`](./gsd-review-pack/core-state/PROJECT.md)
+2. [`gsd-review-pack/core-state/STATE.md`](./gsd-review-pack/core-state/STATE.md)
+3. [`gsd-review-pack/references/CORE2-AXIOMS.md`](./gsd-review-pack/references/CORE2-AXIOMS.md)
+4. [`gsd-review-pack/phase-06/06-VERIFICATION.md`](./gsd-review-pack/phase-06/06-VERIFICATION.md)
+5. [`gsd-review-pack/phase-09/09-VERIFICATION.md`](./gsd-review-pack/phase-09/09-VERIFICATION.md)
+6. [`gsd-review-pack/phase-10/10-POSTMORTEM.md`](./gsd-review-pack/phase-10/10-POSTMORTEM.md)
+7. [`agent/core2_runtime.py`](./agent/core2_runtime.py)
+8. [`agent/core2_authoritative.py`](./agent/core2_authoritative.py)
+9. [`agent/core2_store.py`](./agent/core2_store.py)
+
+If you want the shortest summary:
+
+- baseline exists
+- hybrid helped a bit
+- several plausible ideas were tried
+- ranking was falsified and rolled back
+- the likely remaining leverage is in prompt/delivery-path use of already-covered memory
 
 ---
 
-## Repository Structure
+## What Feedback Is Most Useful
 
-```
-core2_*.py              ← Kernel modules
-agent/                  ← Same, in agent/ subdirectory layout
-tests/                  ← Full test suite
-plugins/                ← Hermes provider plugin seam
-.planning/              ← Phase plans, verification reports, gate artifacts
-  phases/04.6-*/        ← Core axioms, handmade benchmark, glossary, gate matrix
-  phases/04.7-*/        ← Authoritative gate compatibility
-plan6_EN.md             ← Anti-loop execution constitution (English translation)
-plan7vegrehajt_EN.md    ← Unified execution spec (English translation)
-```
+The most useful review is not “cool idea” or “graphs are nice”.
+
+The useful feedback is:
+
+- do the deterministic boundaries make sense?
+- is the provenance / temporal / supersession model coherent?
+- does the planning trail show good experimental discipline, or just benchmark-chasing?
+- is the current carry-forward direction plausible, or is the real bottleneck somewhere else?
+
+Especially valuable:
+- criticism of the current bottleneck diagnosis
+- places where the deterministic core is too large or too small
+- places where the project is confusing local proof with end-to-end proof
 
 ---
 
-*This is a read-only public review mirror — not an MVP, not a release candidate. Primary development is in the main Hermes agent fork.*  
-*No API keys or secrets are present in this repository.*
+## Current Status
+
+As mirrored here:
+
+- latest completed milestone: **v1.4 Ranking Rollback And Postmortem**
+- active milestone: **none**
+- current carry-forward recommendation: **Covered-Family Prompt Delivery Bridge**
+
+This is therefore a **review checkpoint**, not a celebration repo.
+
+---
+
+## Reviewer Note: Concrete Experiment Details
+
+This section is mainly for reviewers who want actual sample questions and a more concrete explanation of how the evaluation was run.
+
+### What We Actually Evaluate
+
+The important point is that the project is **not** treating this as a raw retrieval benchmark.
+
+The main benchmark-facing path goes through the full Core2 / Hermes runtime flow:
+
+1. write-time digestion turns raw interactions into memory objects
+2. query routing chooses a route family
+3. retrieval gathers bounded evidence
+4. the kernel either produces a structured/authoritative answer path or falls back
+5. a judge model checks the final answer against the benchmark answer
+
+So the thing being tested is closer to:
+
+**memory kernel + retrieval + answer delivery path**
+
+not just “did BM25 or embeddings find something relevant?”
+
+### Main Evaluation Stages So Far
+
+#### 1. Broader baseline vs hybrid comparison
+
+Frozen broader set:
+- `70` questions
+
+Result:
+- baseline: `31/70`
+- bounded hybrid: `32/70`
+
+Interpretation:
+- hybrid looked directionally better
+- but not by enough to count as a decisive promotion win
+
+#### 2. Hard residual replay
+
+After that, the project focused on a hard residual set of `38` previously failing questions.
+
+That set became the main “does this actually move the hard failures?” check.
+
+Important reference points:
+- after bounded hardening (`v1.2` state): `3/38`
+- after bounded retrieval-ranking borrow (`v1.3`): `2/38`
+
+That regression is why the ranking path was rolled back in `v1.4`.
+
+### Sample Questions From The Data
+
+Representative examples from the benchmark dataset:
+
+1. `multi-session`
+   - “How much will I save by taking the train from the airport to my hotel instead of a taxi?”
+   - expected answer: `$50`
+
+2. `single-session-assistant`
+   - “I'm planning to visit the Vatican again and I was wondering if you could remind me of the name of that famous deli near the Vatican that serves the best cured meats and cheeses?”
+   - expected answer: `Roscioli`
+
+3. `single-session-preference`
+   - “I've got some free time tonight, any documentary recommendations?”
+   - expected behavior: use prior viewing preferences, not generic recommendation text
+
+4. `temporal-reasoning`
+   - “How many weeks ago did I meet up with my aunt and receive the crystal chandelier?”
+   - expected answer: `4`
+
+5. `multi-session`
+   - “What is the total number of episodes I've listened to from 'How I Built This' and 'My Favorite Murder'?”
+   - expected answer: `27`
+
+6. `multi-session`
+   - “How many different museums or galleries did I visit in the month of February?”
+   - expected answer: `2`
+
+These examples are useful because they show the spread of the problem:
+- scalar facts
+- temporal reasoning
+- preference-conditioned answers
+- multi-session aggregation
+- entity recall
+
+### What The Failure Taxonomy Looks Like
+
+The project does not treat every miss as “the kernel is bad.”
+
+The failure buckets are separated roughly like this:
+
+- `prompt_miss`
+  - the final prompt/delivery path did not use the available memory well enough
+- `handoff_format_miss`
+  - the answer path was structurally close, but the delivery shape still failed the benchmark/judge
+- `judge_artifact`
+  - the remaining miss looks more like evaluation/judge behavior than a true kernel miss
+
+The most important current fact is this:
+
+the hard residual set is still dominated by **`prompt_miss`**, not by retrieval-ranking problems.
+
+That is why the current carry-forward direction is **Covered-Family Prompt Delivery Bridge**, not another retrieval experiment.
+
+### Why The Ranking Rollback Matters
+
+The ranking borrow was not removed because it was ugly or because the code was broken.
+
+It was removed because:
+- it was locally green
+- it was architecturally plausible
+- and it still regressed the hard residual replay
+
+That is an important part of the evaluation philosophy here:
+
+**local proof is necessary, but broader hard-residual evidence wins**
+
+---
+
+*Primary development remains in the main Hermes fork. This repository is a public review mirror of the current Core2 kernel state and its associated planning/verification history.*

@@ -1,0 +1,81 @@
+{
+  "phase": "05",
+  "purpose": "Freeze the baseline-versus-hybrid comparison contract before broader paid evaluation in Phase 6.",
+  "comparison_variants": {
+    "baseline": {
+      "label": "v1.0_shipped_baseline",
+      "hybrid_runtime_mode": "off",
+      "reference_artifact": ".planning/phases/04.1-longmemeval-gate-and-performance-fixes/04.1-GATE-STATUS-20.json",
+      "planned_status_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-STATUS.json",
+      "planned_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-OUTCOME.json"
+    },
+    "hybrid": {
+      "label": "bounded_hybrid_candidate",
+      "hybrid_runtime_mode": "on",
+      "reference_artifact": ".planning/phases/04.11-hybrid-branch-broader-paid-validation/04.11-OUTCOME.json",
+      "planned_status_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-STATUS.json",
+      "planned_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-OUTCOME.json"
+    }
+  },
+  "comparison_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-COMPARISON-OUTCOME.json",
+  "benchmark_mode": "core2",
+  "benchmark_fast": true,
+  "sample_size_requested": 20,
+  "question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "d851d5ba",
+    "5d3d2817",
+    "e9327a54",
+    "69fee5aa",
+    "c8c3f81d",
+    "gpt4_7f6b06db",
+    "gpt4_2d58bcd6",
+    "gpt4_70e84552",
+    "f523d9fe",
+    "6c49646a",
+    "9ee3ecd6",
+    "gpt4_18c2b244",
+    "d682f1a2",
+    "6a1eabeb",
+    "c960da58",
+    "09ba9854_abs",
+    "c2ac3c61",
+    "8fb83627"
+  ],
+  "local_prereq_commands": {
+    "baseline": "CORE2_HYBRID_SUBSTRATE_MODE=off ./.venv/bin/python -m pytest tests/agent/test_core2_handmade_acceptance.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_answer_contract.py -q",
+    "hybrid": "CORE2_HYBRID_SUBSTRATE_MODE=on ./.venv/bin/python -m pytest tests/agent/test_core2_hybrid_substrate.py tests/agent/test_core2_retrieval_routing.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_handmade_acceptance.py -q"
+  },
+  "verdict_thresholds": {
+    "promote_candidate": {
+      "requires_no_kernel_regressions": true,
+      "requires_no_truth_state_regressions": true,
+      "min_pass_rate_delta": 0.1,
+      "min_answer_surface_hit_rate_delta": 0.1
+    },
+    "keep_baseline": {
+      "any_kernel_regression": true,
+      "non_positive_pass_rate_delta": true
+    },
+    "mixed_hold": {
+      "otherwise": true
+    }
+  },
+  "verdict_precedence": [
+    "keep_baseline",
+    "mixed_hold",
+    "promote_candidate"
+  ],
+  "stop_rules": [
+    "Do not edit Core2 kernel, hybrid substrate, or benchmark harness during comparison execution.",
+    "Do not change the frozen question set after execution starts.",
+    "Do not change thresholds after seeing the results.",
+    "Do not treat retrieval-only gains as full memory wins.",
+    "Derive the final human-readable verdict from the canonical comparison outcome artifact, not from prose summaries."
+  ],
+  "notes": [
+    "Phase 5 locks the protocol only; Phase 6 executes the baseline and hybrid runs against this frozen contract.",
+    "The shipped v1.0 baseline remains the default reference until a later phase explicitly promotes a replacement."
+  ]
+}

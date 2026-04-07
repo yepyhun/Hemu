@@ -169,7 +169,7 @@ def _extract_preference_facts(text: str) -> List[DigestedFactCandidate]:
         qualifier = ""
         if time_match:
             qualifier = f" before {time_match}"
-        canonical = f"relaxing activities in the evening{qualifier}".strip()
+        canonical = f"relaxing activities that can be done in the evening{qualifier}".strip()
         extra_metadata = dict(positive_spec.extra_metadata)
         if time_match:
             extra_metadata["time_window"] = f"before {time_match}"
@@ -466,29 +466,49 @@ def _extract_temporal_event_facts(text: str) -> List[DigestedFactCandidate]:
         if trip_spec:
             trip_candidates: List[tuple[str, str]] = []
             recent_road = re.search(
-                r"\bjust got back from a road trip(?: with [^.,;\n]+)? to ([^.!?\n]+?)(?: today| last| recently|,|\.|!|$)",
+                r"\bjust got back from (a road trip(?: with [^.,;\n]+)? to [^.!?\n]+?)(?: today| last| recently|,|\.|!|$)",
                 chunk,
                 flags=re.IGNORECASE,
             )
             if recent_road:
-                destination = _clean_value(recent_road.group(1))
-                trip_candidates.append((f"road trip to {destination}", destination))
+                label = _clean_value(recent_road.group(1))
+                destination_match = re.search(r"\bto\s+(.+)$", label, flags=re.IGNORECASE)
+                destination = _clean_value(destination_match.group(1)) if destination_match else label
+                trip_candidates.append((label, destination))
             recent_camping = re.search(
-                r"\bjust got back from a solo camping trip to ([^.!?\n]+?)(?: today| last| recently|,|\.|!|$)",
+                r"\bjust got back from (a solo camping trip to [^.!?\n]+?)(?: today| last| recently|,|\.|!|$)",
                 chunk,
                 flags=re.IGNORECASE,
             )
             if recent_camping:
-                destination = _clean_value(recent_camping.group(1))
-                trip_candidates.append((f"solo camping trip to {destination}", destination))
+                label = _clean_value(recent_camping.group(1))
+                destination_match = re.search(r"\bto\s+(.+)$", label, flags=re.IGNORECASE)
+                destination = _clean_value(destination_match.group(1)) if destination_match else label
+                trip_candidates.append((label, destination))
             muir_hike = re.search(
-                r"\bhiked at ([^,!?\n]+)",
+                r"\b(?:a\s+)?day hike to ([^,!?\n]+?)(?: with ([^.!?\n]+?))?(?: today| last| recently|,|\.|!|$)",
                 chunk,
                 flags=re.IGNORECASE,
             )
+            if not muir_hike:
+                muir_hike = re.search(
+                    r"\b(?:a\s+)?day hike at ([^,!?\n]+?)(?: with ([^.!?\n]+?))?(?: today| last| recently|,|\.|!|$)",
+                    chunk,
+                    flags=re.IGNORECASE,
+                )
+            if not muir_hike:
+                muir_hike = re.search(
+                    r"\bhiked at ([^,!?\n]+?)(?: with ([^.!?\n]+?))?(?: today| last| recently|,|\.|!|$)",
+                    chunk,
+                    flags=re.IGNORECASE,
+                )
             if muir_hike and "day hike" in lower:
                 destination = _clean_value(muir_hike.group(1))
-                trip_candidates.append((f"day hike at {destination}", destination))
+                companions = _clean_value(muir_hike.group(2) or "")
+                label = f"day hike to {destination}"
+                if companions:
+                    label += f" with {companions}"
+                trip_candidates.append((label, destination))
 
             for label, destination in trip_candidates:
                 extra_metadata = dict(trip_spec.extra_metadata)

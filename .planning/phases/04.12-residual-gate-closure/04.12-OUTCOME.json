@@ -1,0 +1,47 @@
+{
+  "phase": "04.12",
+  "raw_status_artifact": "04.12-STATUS.json",
+  "raw_gate_status": "needs_work",
+  "verdict": "complete_with_stop_point",
+  "verdict_reason": "The residual handoff-format miss was closed through a narrow conversation-reference serialization fix, and the remaining abstention case stayed semantically honest while continuing to classify as a judge artifact under a promptless authoritative path.",
+  "local_proof": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_hybrid_substrate.py tests/agent/test_core2_retrieval_routing.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_handmade_acceptance.py -q",
+    "result": "33 passed"
+  },
+  "residual_replay": {
+    "sample_size_completed": 2,
+    "pass_rate": 0.5,
+    "answer_surface_hit_rate": 1.0,
+    "promptless_authoritative_cases": 2,
+    "failure_patterns": {
+      "passed": 1,
+      "judge_artifact": 1
+    },
+    "failure_families": {
+      "judge_artifact": 1
+    }
+  },
+  "residual_cases": [
+    {
+      "question_id": "e9327a54",
+      "before": "prompt_miss / handoff_format",
+      "after": "passed",
+      "closure": "closed",
+      "answer_surface_family": "conversation_reference",
+      "hypothesis": "Answer: The Sugar Factory at Icon Park."
+    },
+    {
+      "question_id": "09ba9854_abs",
+      "before": "judge_artifact",
+      "after": "judge_artifact",
+      "closure": "accepted_stop_point",
+      "answer_surface_family": "canonical_abstention",
+      "hypothesis": "Answer: I don't have enough grounded information to calculate the savings because the bus fare is missing.",
+      "reason": "Local replay and authoritative surface remain semantically honest and fail-closed; no narrow fix is justified without weakening the abstention contract."
+    }
+  ],
+  "next_move": {
+    "gsd_command": "/gsd-verify-work 4",
+    "summary": "Verify the bounded closure result conversationally, then decide whether to stop or open a new post-v1 comparison/release branch."
+  }
+}

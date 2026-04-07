@@ -1,0 +1,36 @@
+{
+  "source": "local_reconstructed_latest_10",
+  "phase": "04.1",
+  "basis": "current_core2_code_with_04.6_axioms_and_handmade_proof",
+  "latest_question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "gpt4_2d58bcd6",
+    "5d3d2817",
+    "6c49646a",
+    "6a1eabeb",
+    "d682f1a2",
+    "gpt4_7f6b06db",
+    "f523d9fe",
+    "69fee5aa"
+  ],
+  "summary": {
+    "passed_local": 5,
+    "handoff_format": 4,
+    "judge_artifact": 1,
+    "kernel_correctness": 0,
+    "unknown": 0
+  },
+  "items": [
+    {"question_id": "0db4c65d", "gate_class": "handoff_format", "reason": "authoritative_surface_present_but_answer_not_canonically_serialized"},
+    {"question_id": "195a1a1b", "gate_class": "handoff_format", "reason": "authoritative_surface_present_but_answer_not_canonically_serialized"},
+    {"question_id": "gpt4_2d58bcd6", "gate_class": "passed_local", "reason": "answer_contains_ground_truth"},
+    {"question_id": "5d3d2817", "gate_class": "passed_local", "reason": "answer_contains_ground_truth"},
+    {"question_id": "6c49646a", "gate_class": "passed_local", "reason": "answer_contains_ground_truth"},
+    {"question_id": "6a1eabeb", "gate_class": "passed_local", "reason": "answer_contains_ground_truth"},
+    {"question_id": "d682f1a2", "gate_class": "handoff_format", "reason": "authoritative_surface_present_but_answer_not_canonically_serialized"},
+    {"question_id": "gpt4_7f6b06db", "gate_class": "handoff_format", "reason": "authoritative_surface_present_but_answer_not_canonically_serialized"},
+    {"question_id": "f523d9fe", "gate_class": "passed_local", "reason": "answer_contains_ground_truth"},
+    {"question_id": "69fee5aa", "gate_class": "judge_artifact", "reason": "structured_evidence_has_answer_but_checker_missed"}
+  ]
+}

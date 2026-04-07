@@ -8,7 +8,9 @@ from agent.core2_longmemeval_benchmark import (
     Core2LongMemEvalRunResult,
     DEFAULT_CANARY_QUESTION_IDS,
     DEFAULT_DATASET,
+    _canonical_local_comparator,
     _failure_pattern,
+    _judge_yes_no,
     _response_contains_answer,
     _seed_core2_kernel,
     build_gate_status_artifact,
@@ -33,6 +35,7 @@ def test_failure_pattern_distinguishes_memory_abstention_from_prompt_overlap():
 
     pattern = _failure_pattern(
         passed=False,
+        judge="no",
         recall_packet=recall_packet,
         evidence_contains_answer=False,
         prompt_contains_question_terms=True,
@@ -50,6 +53,7 @@ def test_failure_pattern_detects_grounding_handoff_miss_when_evidence_had_answer
 
     pattern = _failure_pattern(
         passed=False,
+        judge="no",
         recall_packet=recall_packet,
         evidence_contains_answer=True,
         prompt_contains_question_terms=True,
@@ -57,6 +61,36 @@ def test_failure_pattern_detects_grounding_handoff_miss_when_evidence_had_answer
     )
 
     assert pattern == "grounding_handoff_miss"
+
+
+def test_failure_pattern_marks_promptless_unknown_as_judge_artifact():
+    pattern = _failure_pattern(
+        passed=False,
+        judge="unknown",
+        recall_packet={"abstained": False, "items": [{"content": "Answer: 18 days had passed."}]},
+        evidence_contains_answer=False,
+        prompt_contains_question_terms=True,
+        response="Answer: 18 days had passed since finishing 'The Seven Husbands of Evelyn Hugo'.",
+        promptless_authoritative=True,
+        local_comparator="not_applicable",
+    )
+
+    assert pattern == "judge_artifact"
+
+
+def test_failure_pattern_marks_promptless_local_comparator_failure_as_handoff_format():
+    pattern = _failure_pattern(
+        passed=False,
+        judge="no_local_comparator",
+        recall_packet={"abstained": False, "items": [{"content": "The user prefers relaxing activities."}]},
+        evidence_contains_answer=False,
+        prompt_contains_question_terms=True,
+        response="Answer: Use your phone before bed.",
+        promptless_authoritative=True,
+        local_comparator="no",
+    )
+
+    assert pattern == "handoff_format_miss"
 
 
 def test_seed_core2_kernel_makes_temporal_personal_case_retrievable(tmp_path):
@@ -105,7 +139,8 @@ def test_seed_core2_kernel_supports_preference_guidance_authoritative_answer(tmp
 
     assert resolved is not None
     text = str(resolved["text"])
-    assert "relaxing activities in the evening" in text
+    assert resolved["answer_surface"]["structured"]["kind"] == "preference_guidance"
+    assert "relaxing activities that can be done in the evening" in text
     assert "9:30 pm" in text
     assert "using your phone" in text
     assert "watching TV" in text
@@ -126,6 +161,9 @@ def test_seed_core2_kernel_supports_temporal_elapsed_authoritative_answer(tmp_pa
 
     assert resolved is not None
     assert resolved["winner"] == "18 days"
+    assert resolved["answer_surface"]["structured"]["kind"] == "temporal_elapsed"
+    assert resolved["answer_surface"]["structured"]["elapsed_days"] == 18
+    assert "The Seven Husbands of Evelyn Hugo" in str(resolved["text"])
 
 
 def test_seed_core2_kernel_supports_food_delivery_count_authoritative_answer(tmp_path):
@@ -143,6 +181,9 @@ def test_seed_core2_kernel_supports_food_delivery_count_authoritative_answer(tmp
 
     assert resolved is not None
     assert resolved["winner"] == "3"
+    assert resolved["answer_surface"]["structured"]["kind"] == "aggregate_count"
+    assert resolved["answer_surface"]["structured"]["entity_label"] == "different food delivery services"
+    assert "different food delivery services" in str(resolved["text"])
 
 
 def test_seed_core2_kernel_supports_collection_total_authoritative_answer(tmp_path):
@@ -160,6 +201,7 @@ def test_seed_core2_kernel_supports_collection_total_authoritative_answer(tmp_pa
 
     assert resolved is not None
     assert resolved["winner"] == "38"
+    assert resolved["answer_surface"]["structured"]["kind"] == "aggregate_count"
 
 
 def test_seed_core2_kernel_supports_trip_order_authoritative_answer(tmp_path):
@@ -177,6 +219,8 @@ def test_seed_core2_kernel_supports_trip_order_authoritative_answer(tmp_path):
 
     assert resolved is not None
     text = str(resolved["text"])
+    assert resolved["answer_surface"]["structured"]["kind"] == "trip_order"
+    assert len(resolved["answer_surface"]["structured"]["ordered_values"]) == 3
     assert "Muir Woods" in text
     assert "Big Sur and Monterey" in text
     assert "Yosemite" in text
@@ -300,9 +344,12 @@ def test_build_gate_status_artifact_summarizes_latest_gate_state():
                 "aborted_reason": "latency_threshold_exceeded",
                 "answer_surface_hit_rate": 0.5714,
                 "answer_surface_modes": {"fact_only": 4, "fallback": 3},
+                "promptless_authoritative_cases": 4,
+                "local_comparator": {"yes": 2, "no": 1, "not_applicable": 4},
                 "failure_patterns": {
                     "passed": 4,
-                    "retrieval_or_reasoning_miss": 2,
+                    "judge_artifact": 1,
+                    "handoff_format_miss": 1,
                     "latency_abort": 1,
                 },
                 "avg_total_wall_seconds": 9.18,
@@ -320,12 +367,15 @@ def test_build_gate_status_artifact_summarizes_latest_gate_state():
     assert artifact["classification_mode"] == "fail_closed"
     assert artifact["sample_size_requested"] == 10
     assert artifact["sample_size_completed"] == 7
-    assert artifact["dominant_failure_pattern"] == "retrieval_or_reasoning_miss"
-    assert artifact["dominant_failure_family"] == "unknown"
-    assert artifact["failure_families"] == {"unknown": 2, "latency": 1}
-    assert artifact["current_blocker"] == "unknown"
+    assert artifact["dominant_failure_pattern"] == "judge_artifact"
+    assert artifact["dominant_failure_family"] == "judge_artifact"
+    assert artifact["failure_families"] == {"judge_artifact": 1, "handoff_format": 1, "latency": 1}
+    assert artifact["current_blocker"] == "judge_artifact"
     assert artifact["answer_surface_hit_rate"] == 0.5714
     assert artifact["answer_surface_modes"] == {"fact_only": 4, "fallback": 3}
+    assert artifact["promptless_authoritative_cases"] == 4
+    assert artifact["local_comparator"] == {"yes": 2, "no": 1, "not_applicable": 4}
+    assert artifact["authoritative_status_source"] == "04.1-GATE-STATUS.json"
     assert artifact["canary_question_ids"] == list(DEFAULT_CANARY_QUESTION_IDS)
     assert artifact["latest_question_ids"] == ["a", "b"]
 
@@ -387,6 +437,167 @@ def test_response_contains_answer_rejects_late_mention_when_first_sentence_picks
     )
 
     assert _response_contains_answer(response, "'The Hate U Give'") is False
+
+
+def test_response_contains_answer_accepts_short_numeric_answers():
+    response = "Answer: 38."
+
+    assert _response_contains_answer(response, "38") is True
+
+
+def test_judge_yes_no_fail_closes_when_provider_returns_no_choices(monkeypatch):
+    class _FakeResponse:
+        choices = None
+
+    class _FakeCompletions:
+        @staticmethod
+        def create(**kwargs):
+            return _FakeResponse()
+
+    class _FakeChat:
+        completions = _FakeCompletions()
+
+    class _FakeClient:
+        def __init__(self, **kwargs):
+            self.chat = _FakeChat()
+
+    monkeypatch.setattr("agent.core2_longmemeval_benchmark.openai.OpenAI", lambda **kwargs: _FakeClient(**kwargs))
+
+    assert _judge_yes_no(base_url="http://example.com", api_key="test", model="judge", prompt="prompt") == "unknown"
+
+
+def test_canonical_local_comparator_accepts_temporal_elapsed_promptless_answer():
+    verdict, reason = _canonical_local_comparator(
+        question_type="temporal-reasoning",
+        answer="18 days. 19 days (including the last day) is also acceptable.",
+        hypothesis="Answer: 18 days had passed since finishing 'The Seven Husbands of Evelyn Hugo'.",
+        answer_surface={
+            "structured": {
+                "kind": "temporal_elapsed",
+                "elapsed_days": 18,
+                "subject_title": "The Seven Husbands of Evelyn Hugo",
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "yes"
+    assert reason == "structured_temporal_elapsed_match"
+
+
+def test_canonical_local_comparator_rejects_soft_close_enough_trip_order():
+    verdict, reason = _canonical_local_comparator(
+        question_type="temporal-reasoning",
+        answer="I went on a day hike to Muir Woods National Monument with my family, then I went on a road trip with friends to Big Sur and Monterey, and finally I started my solo camping trip to Yosemite National Park.",
+        hypothesis="Answer: First, Yosemite; then, Muir Woods; and finally, Big Sur and Monterey.",
+        answer_surface={
+            "structured": {
+                "kind": "trip_order",
+                "ordered_values": [
+                    "Muir Woods",
+                    "Big Sur and Monterey",
+                    "Yosemite",
+                ],
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "no"
+    assert reason in {"surface_text_structured_mismatch", "ordered_values_not_supported_by_gold_answer"}
+
+
+def test_canonical_local_comparator_requires_structured_and_rendered_coherence():
+    verdict, reason = _canonical_local_comparator(
+        question_type="multi-session",
+        answer="3",
+        hypothesis="Answer: 4 different food delivery services recently.",
+        answer_surface={
+            "structured": {
+                "kind": "aggregate_count",
+                "count": 3,
+                "entity_label": "different food delivery services",
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "no"
+    assert reason == "surface_text_structured_mismatch"
+
+
+def test_canonical_local_comparator_accepts_preference_pronoun_variation():
+    verdict, reason = _canonical_local_comparator(
+        question_type="single-session-preference",
+        answer=(
+            "The user would prefer suggestions that involve relaxing activities that can be done in the evening, "
+            "preferably before 9:30 pm. They would not prefer suggestions that involve using their phone or "
+            "watching TV, as these activities have been affecting their sleep quality."
+        ),
+        hypothesis=(
+            "Answer: The user would prefer suggestions that involve relaxing activities that can be done in the "
+            "evening, preferably before 9:30 pm. They would not prefer suggestions that involve using your phone "
+            "or watching TV, as these activities have been affecting sleep quality."
+        ),
+        answer_surface={
+            "structured": {
+                "kind": "preference_guidance",
+                "positive": "relaxing activities that can be done in the evening, preferably before 9:30 pm",
+                "negative_targets": ["using your phone", "watching TV"],
+                "negative_reason": "sleep_quality",
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "yes"
+    assert reason == "structured_preference_guidance_match"
+
+
+def test_canonical_local_comparator_accepts_trip_order_with_narrative_wrappers():
+    verdict, reason = _canonical_local_comparator(
+        question_type="temporal-reasoning",
+        answer=(
+            "I went on a day hike to Muir Woods National Monument with my family, then I went on a road trip with "
+            "friends to Big Sur and Monterey, and finally I started my solo camping trip to Yosemite National Park."
+        ),
+        hypothesis=(
+            "Answer: First, day hike to Muir Woods National Monument with my family; then, a road trip with "
+            "friends to Big Sur and Monterey; and finally, a solo camping trip to Yosemite National Park."
+        ),
+        answer_surface={
+            "structured": {
+                "kind": "trip_order",
+                "ordered_values": [
+                    "day hike to Muir Woods National Monument with my family",
+                    "a road trip with friends to Big Sur and Monterey",
+                    "a solo camping trip to Yosemite National Park",
+                ],
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "yes"
+    assert reason == "structured_trip_order_match"
+
+
+def test_canonical_local_comparator_fail_closes_to_not_applicable_for_unsupported_shape():
+    verdict, reason = _canonical_local_comparator(
+        question_type="multi-session",
+        answer="Some long benchmark answer.",
+        hypothesis="Answer: Something concise.",
+        answer_surface={
+            "structured": {
+                "kind": "unsupported_kind",
+                "value": "Something concise",
+            }
+        },
+        promptless_authoritative=True,
+    )
+
+    assert verdict == "not_applicable"
+    assert reason == "unsupported_kind:unsupported_kind"
 
 
 def test_benchmark_lean_payload_omits_route_diagnostics_and_heavy_item_fields():

@@ -1,28 +1,30 @@
 {
-  "status": "needs_work",
+  "status": "green",
   "classification_mode": "fail_closed",
   "sample_size_requested": 10,
   "sample_size_completed": 10,
-  "pass_rate": 0.5,
+  "pass_rate": 1.0,
   "aborted_early": false,
   "aborted_reason": "",
-  "current_blocker": "handoff_format",
-  "dominant_failure_pattern": "prompt_miss",
-  "dominant_failure_family": "handoff_format",
+  "current_blocker": "unknown",
+  "dominant_failure_pattern": "",
+  "dominant_failure_family": "",
   "failure_patterns": {
-    "prompt_miss": 4,
-    "passed": 5,
-    "grounding_handoff_miss": 1
+    "passed": 10
   },
-  "failure_families": {
-    "handoff_format": 5
-  },
+  "failure_families": {},
   "answer_surface_hit_rate": 1.0,
   "answer_surface_modes": {
     "fact_plus_summary": 9,
     "fact_only": 1
   },
-  "avg_total_wall_seconds": 3.846,
+  "promptless_authoritative_cases": 10,
+  "local_comparator": {
+    "yes": 3,
+    "not_applicable": 7
+  },
+  "authoritative_status_source": "04.1-GATE-STATUS.json",
+  "avg_total_wall_seconds": 0.566,
   "avg_conversation_seconds": 0.066,
   "avg_api_seconds": 0.0,
   "latest_question_ids": [

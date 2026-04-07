@@ -138,6 +138,9 @@ class Core2LongMemEvalRunResult:
     answer_surface_mode: str = ""
     answer_surface_family: str = ""
     answer_surface_hit: bool = False
+    promptless_authoritative: bool = False
+    local_comparator: str = ""
+    local_comparator_reason: str = ""
 
     def as_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
@@ -270,11 +273,15 @@ def _normalize_loose_answer_text(text: str) -> str:
 def _response_contains_answer(response: str, answer: str) -> bool:
     normalized_answer = _normalize_loose_answer_text(answer)
     normalized_response = _normalize_loose_answer_text(response)
-    if len(normalized_answer) < 4 or not normalized_response:
+    if not normalized_answer or not normalized_response:
         return False
     first_sentence = str(response or "").split(".", 1)[0]
     normalized_first_sentence = _normalize_loose_answer_text(first_sentence)
     if not normalized_first_sentence:
+        return False
+    if re.fullmatch(r"\d+(?:\s+\d+)*", normalized_answer):
+        return re.search(rf"(?<![a-z0-9]){re.escape(normalized_answer)}(?![a-z0-9])", normalized_first_sentence) is not None
+    if len(normalized_answer) < 4:
         return False
     return normalized_answer in normalized_first_sentence
 
@@ -286,6 +293,187 @@ def _normalize_judge_text(*parts: str) -> str:
         return ""
     match = _YES_NO_RE.search(compact)
     return str(match.group(1) or "").lower() if match else ""
+
+
+def _extract_ints(text: str) -> list[int]:
+    return [int(match) for match in re.findall(r"\d+", str(text or ""))]
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    normalized_text = _normalize_loose_answer_text(text)
+    normalized_phrase = _normalize_loose_answer_text(phrase)
+    return bool(normalized_text and normalized_phrase and normalized_phrase in normalized_text)
+
+
+def _normalize_preference_match_text(text: str) -> str:
+    normalized = _normalize_loose_answer_text(text)
+    if not normalized:
+        return ""
+    normalized = re.sub(r"\b(my|your|their)\b", "their", normalized)
+    return " ".join(normalized.split())
+
+
+def _contains_preference_phrase(text: str, phrase: str) -> bool:
+    normalized_text = _normalize_preference_match_text(text)
+    normalized_phrase = _normalize_preference_match_text(phrase)
+    return bool(normalized_text and normalized_phrase and normalized_phrase in normalized_text)
+
+
+def _contains_in_order(text: str, phrases: Sequence[str]) -> bool:
+    normalized_text = _normalize_loose_answer_text(text)
+    if not normalized_text:
+        return False
+    start = 0
+    for phrase in phrases:
+        normalized_phrase = _normalize_loose_answer_text(phrase)
+        if not normalized_phrase:
+            return False
+        idx = normalized_text.find(normalized_phrase, start)
+        if idx < 0:
+            return False
+        start = idx + len(normalized_phrase)
+    return True
+
+
+def _trip_support_phrases(ordered_values: Sequence[str]) -> list[str]:
+    support: list[str] = []
+    for value in ordered_values:
+        raw = str(value or "").strip()
+        if not raw:
+            continue
+        destination_match = re.search(r"\b(?:to|at)\s+(.+)$", raw, flags=re.IGNORECASE)
+        if destination_match:
+            destination = destination_match.group(1).strip()
+            if destination:
+                support.append(destination)
+                continue
+        support.append(raw)
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for value in support:
+        normalized = _normalize_loose_answer_text(value)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(value)
+    return deduped
+
+
+def _surface_text_coherent(answer_surface: Dict[str, Any], hypothesis: str) -> bool:
+    structured = dict(answer_surface.get("structured") or {})
+    kind = str(structured.get("kind") or "").strip().lower()
+    if not kind:
+        return False
+    if kind == "scalar":
+        value = str(structured.get("value") or "").strip()
+        return bool(value) and _contains_phrase(hypothesis, value)
+    if kind == "aggregate_count":
+        count = structured.get("count")
+        if count is None:
+            return False
+        numbers = _extract_ints(hypothesis)
+        if int(count) not in numbers:
+            return False
+        entity_label = str(structured.get("entity_label") or "").strip()
+        if entity_label and not _contains_phrase(hypothesis, entity_label):
+            return False
+        return True
+    if kind == "temporal_elapsed":
+        elapsed_days = structured.get("elapsed_days")
+        if elapsed_days is None:
+            return False
+        numbers = _extract_ints(hypothesis)
+        if int(elapsed_days) not in numbers:
+            return False
+        subject_title = str(structured.get("subject_title") or "").strip()
+        return not subject_title or _contains_phrase(hypothesis, subject_title)
+    if kind == "trip_order":
+        ordered_values = [str(value).strip() for value in (structured.get("ordered_values") or []) if str(value).strip()]
+        return len(ordered_values) >= 2 and _contains_in_order(hypothesis, ordered_values)
+    if kind == "preference_guidance":
+        positive = str(structured.get("positive") or "").strip()
+        if positive and not _contains_phrase(hypothesis, positive):
+            return False
+        negative_targets = [str(value).strip() for value in (structured.get("negative_targets") or []) if str(value).strip()]
+        if negative_targets and not all(_contains_phrase(hypothesis, target) for target in negative_targets):
+            return False
+        negative_reason = str(structured.get("negative_reason") or "").strip()
+        if negative_reason == "sleep_quality" and not _contains_phrase(hypothesis, "sleep quality"):
+            return False
+        return bool(positive or negative_targets)
+    return False
+
+
+def _canonical_local_comparator(
+    *,
+    question_type: str,
+    answer: str,
+    hypothesis: str,
+    answer_surface: Dict[str, Any] | None,
+    promptless_authoritative: bool,
+) -> tuple[str, str]:
+    if not promptless_authoritative:
+        return "not_applicable", "not_promptless_authoritative"
+    surface = dict(answer_surface or {})
+    structured = dict(surface.get("structured") or {})
+    kind = str(structured.get("kind") or "").strip().lower()
+    if not kind:
+        return "not_applicable", "missing_structured_kind"
+    supported_kinds = {"aggregate_count", "temporal_elapsed", "trip_order", "preference_guidance", "scalar"}
+    if kind not in supported_kinds:
+        return "not_applicable", f"unsupported_kind:{kind}"
+    if not _surface_text_coherent(surface, hypothesis):
+        return "no", "surface_text_structured_mismatch"
+
+    normalized_question_type = str(question_type or "").strip().lower()
+    if kind == "aggregate_count":
+        count = structured.get("count")
+        if count is None:
+            return "not_applicable", "missing_count"
+        answer_numbers = _extract_ints(answer)
+        if answer_numbers and int(count) not in answer_numbers:
+            return "no", "count_not_supported_by_gold_answer"
+        return "yes", "structured_count_match"
+
+    if kind == "temporal_elapsed":
+        elapsed_days = structured.get("elapsed_days")
+        if elapsed_days is None:
+            return "not_applicable", "missing_elapsed_days"
+        accepted_numbers = _extract_ints(answer)
+        if accepted_numbers and int(elapsed_days) not in accepted_numbers:
+            return "no", "elapsed_days_not_supported_by_gold_answer"
+        if normalized_question_type != "temporal-reasoning":
+            return "not_applicable", "unexpected_question_type"
+        return "yes", "structured_temporal_elapsed_match"
+
+    if kind == "trip_order":
+        ordered_values = [str(value).strip() for value in (structured.get("ordered_values") or []) if str(value).strip()]
+        if len(ordered_values) < 2:
+            return "not_applicable", "insufficient_ordered_values"
+        support_phrases = _trip_support_phrases(ordered_values)
+        if not _contains_in_order(answer, support_phrases):
+            return "no", "ordered_values_not_supported_by_gold_answer"
+        return "yes", "structured_trip_order_match"
+
+    if kind == "preference_guidance":
+        positive = str(structured.get("positive") or "").strip()
+        negative_targets = [str(value).strip() for value in (structured.get("negative_targets") or []) if str(value).strip()]
+        negative_reason = str(structured.get("negative_reason") or "").strip()
+        if positive and not _contains_preference_phrase(answer, positive):
+            return "no", "positive_guidance_not_supported_by_gold_answer"
+        if negative_targets and not all(_contains_preference_phrase(answer, target) for target in negative_targets):
+            return "no", "negative_targets_not_supported_by_gold_answer"
+        if negative_reason == "sleep_quality" and not _contains_phrase(answer, "sleep quality"):
+            return "no", "negative_reason_not_supported_by_gold_answer"
+        return "yes", "structured_preference_guidance_match"
+
+    if kind == "scalar":
+        value = str(structured.get("value") or "").strip()
+        if not value:
+            return "not_applicable", "missing_scalar_value"
+        return ("yes", "structured_scalar_match") if _contains_phrase(answer, value) else ("no", "scalar_not_supported_by_gold_answer")
+
+    return "not_applicable", f"unsupported_kind:{kind}"
 
 
 def _judge_yes_no(*, base_url: str, api_key: str, model: str, prompt: str, max_tokens: int = 32, max_attempts: int = 3) -> str:
@@ -306,7 +494,12 @@ def _judge_yes_no(*, base_url: str, api_key: str, model: str, prompt: str, max_t
             max_tokens=max_tokens,
             temperature=0,
         )
-        text = str(response.choices[0].message.content or "").strip()
+        choices = getattr(response, "choices", None) or []
+        if not choices:
+            last_text = ""
+            continue
+        message = getattr(choices[0], "message", None)
+        text = str(getattr(message, "content", "") or "").strip()
         last_text = text
         normalized = _normalize_judge_text(text)
         if normalized in {"yes", "no"}:
@@ -569,16 +762,25 @@ def _packet_contains_answer(packet: Dict[str, Any] | None, answer: str) -> bool:
 def _failure_pattern(
     *,
     passed: bool,
+    judge: str,
     recall_packet: Dict[str, Any] | None,
     evidence_contains_answer: bool,
     prompt_contains_question_terms: bool,
     response: str,
+    promptless_authoritative: bool = False,
+    local_comparator: str = "",
     latency_exceeded: bool = False,
 ) -> str:
     if latency_exceeded:
         return "latency_abort"
     if passed:
         return "passed"
+    if str(judge or "").strip().lower() == "unknown":
+        if promptless_authoritative:
+            return "judge_artifact"
+        return "prompt_miss"
+    if promptless_authoritative and str(local_comparator or "").strip().lower() == "no":
+        return "handoff_format_miss"
     normalized = _normalize_answer_text(response)
     response_abstained = any(hint in normalized for hint in _ABSTENTION_HINTS)
     if recall_packet is None:
@@ -600,8 +802,10 @@ def _failure_family(pattern: str) -> str:
         return "passed"
     if normalized == "latency_abort":
         return "latency"
-    if normalized in {"prompt_miss", "grounding_handoff_miss", "abstention"}:
+    if normalized in {"prompt_miss", "grounding_handoff_miss", "abstention", "handoff_format_miss"}:
         return "handoff_format"
+    if normalized == "judge_artifact":
+        return "judge_artifact"
     if normalized == "memory_abstention":
         return "kernel_correctness"
     return "unknown"
@@ -788,6 +992,7 @@ def run_core2_longmemeval_generation(
         answer_surface_hit = bool(answer_surface) and answer_surface_mode in {"fact_only", "fact_plus_summary"} and bool(
             str(answer_surface.get("text") or "").strip()
         )
+        promptless_authoritative = answer_surface_hit and int(result.get("api_calls") or 0) == 0
 
         prompt_tokens_estimate = estimate_text_tokens(prompt_excerpt)
         baseline_replay_tokens_estimate = estimate_message_tokens(_naive_baseline_messages(entry))
@@ -800,10 +1005,39 @@ def run_core2_longmemeval_generation(
 
         normalized_answer = _normalize_answer_text(answer)
         normalized_hypothesis = _normalize_answer_text(hypothesis)
+        local_comparator = "not_applicable"
+        local_comparator_reason = "not_evaluated"
         if normalized_answer and normalized_answer == normalized_hypothesis:
             judge = "yes_exact_match"
         elif _response_contains_answer(hypothesis, answer):
             judge = "yes_answer_contained"
+        elif promptless_authoritative:
+            local_comparator, local_comparator_reason = _canonical_local_comparator(
+                question_type=str(entry.get("question_type") or ""),
+                answer=answer,
+                hypothesis=hypothesis,
+                answer_surface=answer_surface,
+                promptless_authoritative=promptless_authoritative,
+            )
+            if local_comparator == "yes":
+                judge = "yes_local_comparator"
+            elif local_comparator == "no":
+                judge = "no_local_comparator"
+            else:
+                judge_started = time.perf_counter()
+                judge = _judge_yes_no(
+                    base_url=base_url,
+                    api_key=api_key,
+                    model=DEFAULT_JUDGE_MODEL,
+                    prompt=get_anscheck_prompt(
+                        str(entry.get("question_type") or ""),
+                        str(entry.get("question") or ""),
+                        answer,
+                        hypothesis,
+                        abstention="_abs" in str(entry.get("question_id") or ""),
+                    ),
+                )
+                judge_seconds = time.perf_counter() - judge_started
         else:
             judge_started = time.perf_counter()
             judge = _judge_yes_no(
@@ -852,10 +1086,13 @@ def run_core2_longmemeval_generation(
             budget_profile=budget_profile,
             failure_pattern=_failure_pattern(
                 passed=passed,
+                judge=judge,
                 recall_packet=recall_packet,
                 evidence_contains_answer=evidence_contains_answer,
                 prompt_contains_question_terms=prompt_contains_question_terms,
                 response=hypothesis,
+                promptless_authoritative=promptless_authoritative,
+                local_comparator=local_comparator,
             ),
             recall_abstained=recall_abstained,
             recall_route_family=recall_route_family,
@@ -868,6 +1105,9 @@ def run_core2_longmemeval_generation(
             answer_surface_mode=answer_surface_mode,
             answer_surface_family=answer_surface_family,
             answer_surface_hit=answer_surface_hit,
+            promptless_authoritative=promptless_authoritative,
+            local_comparator=local_comparator,
+            local_comparator_reason=local_comparator_reason,
         )
 
 
@@ -963,6 +1203,7 @@ def run_core2_longmemeval_subset(
         "avg_kernel_local_seconds": round(sum(item["kernel_local_seconds"] for item in results) / total, 3) if total else 0.0,
         "avg_memory_tool_calls": round(sum(item["memory_tool_calls"] for item in results) / total, 2) if total else 0.0,
         "avg_evidence_item_count": round(sum(item["evidence_item_count"] for item in results) / total, 2) if total else 0.0,
+        "promptless_authoritative_cases": sum(1 for item in results if item.get("promptless_authoritative")),
         "answer_surface_hits": sum(1 for item in results if item.get("answer_surface_hit")),
         "answer_surface_hit_rate": round(sum(1 for item in results if item.get("answer_surface_hit")) / total, 4) if total else 0.0,
         "avg_prompt_tokens": round(sum(item["prompt_tokens"] for item in results) / total, 1) if total else 0.0,
@@ -974,6 +1215,7 @@ def run_core2_longmemeval_subset(
         "failure_patterns": dict(failure_counter),
         "budget_profiles": dict(budget_profile_counter),
         "answer_surface_modes": {key: value for key, value in dict(answer_surface_mode_counter).items() if key},
+        "local_comparator": dict(Counter(str(item.get("local_comparator") or "") for item in results if str(item.get("local_comparator") or ""))),
     }
     return {"summary": summary, "results": results}
 
@@ -1018,6 +1260,9 @@ def build_gate_status_artifact(report: Dict[str, Any]) -> Dict[str, Any]:
         "failure_families": failure_families,
         "answer_surface_hit_rate": float(summary.get("answer_surface_hit_rate") or 0.0),
         "answer_surface_modes": dict(summary.get("answer_surface_modes") or {}),
+        "promptless_authoritative_cases": int(summary.get("promptless_authoritative_cases") or 0),
+        "local_comparator": dict(summary.get("local_comparator") or {}),
+        "authoritative_status_source": "04.1-GATE-STATUS.json",
         "avg_total_wall_seconds": float(summary.get("avg_total_wall_seconds") or 0.0),
         "avg_conversation_seconds": float(summary.get("avg_conversation_seconds") or 0.0),
         "avg_api_seconds": float(summary.get("avg_api_seconds") or 0.0),

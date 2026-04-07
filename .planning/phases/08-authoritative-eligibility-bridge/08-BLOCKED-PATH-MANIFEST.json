@@ -1,0 +1,44 @@
+{
+  "phase": "08",
+  "cluster_source": "v1.1/07 authoritative eligibility dead zone",
+  "purpose": "Tiny frozen local falsification slice for the bounded authoritative-eligibility bridge.",
+  "cases": [
+    {
+      "case_id": "bridge_preference_evening_hybrid_turn",
+      "query": "Can you suggest some activities that I can do in the evening?",
+      "fact_keys": [
+        "preference.evening.activities.current",
+        "preference.evening.screen_avoid.current"
+      ],
+      "bridge_path": "hybrid_scoped_turn",
+      "expected_route_shift": "authoritative"
+    },
+    {
+      "case_id": "bridge_collection_total_hybrid_raw",
+      "query": "How many vinyl records are in my collection now?",
+      "fact_keys": [
+        "aggregate.collection.total.current"
+      ],
+      "bridge_path": "hybrid_scoped_raw",
+      "expected_route_shift": "authoritative"
+    },
+    {
+      "case_id": "bridge_trip_order_hybrid_turn",
+      "query": "Which trip happened first, 'day hike to Muir Woods' or 'day hike to Mount Tam'?",
+      "fact_keys": [
+        "event.trip.recent"
+      ],
+      "bridge_path": "hybrid_scoped_turn",
+      "expected_route_shift": "authoritative"
+    },
+    {
+      "case_id": "negative_plain_lexical_structured",
+      "query": "Can you suggest some activities that I can do in the evening?",
+      "fact_keys": [
+        "preference.evening.activities.current"
+      ],
+      "bridge_path": "semantic_first",
+      "expected_route_shift": "blocked"
+    }
+  ]
+}

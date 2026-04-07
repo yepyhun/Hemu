@@ -1,0 +1,62 @@
+{
+  "status": "needs_work",
+  "classification_mode": "fail_closed",
+  "sample_size_requested": 20,
+  "sample_size_completed": 20,
+  "pass_rate": 0.95,
+  "aborted_early": false,
+  "aborted_reason": "",
+  "current_blocker": "judge_artifact",
+  "dominant_failure_pattern": "judge_artifact",
+  "dominant_failure_family": "judge_artifact",
+  "failure_patterns": {
+    "passed": 19,
+    "judge_artifact": 1
+  },
+  "failure_families": {
+    "judge_artifact": 1
+  },
+  "answer_surface_hit_rate": 0.95,
+  "answer_surface_modes": {
+    "fact_plus_summary": 19
+  },
+  "promptless_authoritative_cases": 19,
+  "local_comparator": {
+    "yes": 5,
+    "not_applicable": 15
+  },
+  "authoritative_status_source": "04.1-GATE-STATUS.json",
+  "avg_total_wall_seconds": 1.816,
+  "avg_conversation_seconds": 0.753,
+  "avg_api_seconds": 0.568,
+  "latest_question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "d851d5ba",
+    "5d3d2817",
+    "e9327a54",
+    "69fee5aa",
+    "c8c3f81d",
+    "gpt4_7f6b06db",
+    "gpt4_2d58bcd6",
+    "gpt4_70e84552",
+    "f523d9fe",
+    "6c49646a",
+    "9ee3ecd6",
+    "gpt4_18c2b244",
+    "d682f1a2",
+    "6a1eabeb",
+    "c960da58",
+    "09ba9854_abs",
+    "c2ac3c61",
+    "8fb83627"
+  ],
+  "canary_question_ids": [
+    "0db4c65d",
+    "195a1a1b",
+    "d682f1a2",
+    "gpt4_7f6b06db",
+    "f523d9fe"
+  ],
+  "canary_size": 5
+}

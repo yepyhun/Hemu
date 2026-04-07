@@ -1,0 +1,49 @@
+{
+  "phase": "05",
+  "purpose": "Define the required machine-readable artifact shapes for baseline-versus-hybrid comparison.",
+  "variant_outcome_required_fields": [
+    "phase",
+    "variant",
+    "runtime_mode",
+    "raw_status_artifact",
+    "sample_size_completed",
+    "pass_rate",
+    "answer_surface_hit_rate",
+    "failure_patterns",
+    "failure_families",
+    "promptless_authoritative_cases",
+    "avg_total_wall_seconds",
+    "avg_conversation_seconds",
+    "avg_api_seconds",
+    "residual_failures",
+    "notes"
+  ],
+  "comparison_outcome_required_fields": [
+    "phase",
+    "baseline_artifact",
+    "hybrid_artifact",
+    "verdict",
+    "verdict_precedence_applied",
+    "verdict_reason",
+    "locked_thresholds",
+    "baseline",
+    "hybrid",
+    "delta",
+    "residual_risks",
+    "next_move"
+  ],
+  "planned_artifacts": {
+    "baseline_raw_status": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-STATUS.json",
+    "baseline_outcome": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-OUTCOME.json",
+    "hybrid_raw_status": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-STATUS.json",
+    "hybrid_outcome": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-OUTCOME.json",
+    "comparison_outcome": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-COMPARISON-OUTCOME.json"
+  },
+  "normalization_rules": [
+    "Use the same question id set for both variants.",
+    "Record the runtime mode explicitly for each variant.",
+    "Preserve raw failure patterns and higher-level failure family rollups.",
+    "Compute deltas as hybrid minus baseline.",
+    "Do not let prose summaries introduce fields absent from the canonical outcome."
+  ]
+}

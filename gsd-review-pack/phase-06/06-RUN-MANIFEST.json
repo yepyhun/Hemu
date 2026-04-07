@@ -1,0 +1,134 @@
+{
+  "phase": "06",
+  "purpose": "Serious frozen 70-sample baseline-versus-hybrid evaluation for v1.1 default-selection evidence.",
+  "supersedes": [
+    ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-STATUS.json",
+    ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-STATUS.json"
+  ],
+  "sampling_method": {
+    "kind": "stratified_sample",
+    "source": "agent.core2_longmemeval_benchmark.stratified_sample",
+    "seed": 7,
+    "sample_size_requested": 70
+  },
+  "comparison_variants": {
+    "baseline": {
+      "label": "v1.0_shipped_baseline",
+      "hybrid_runtime_mode": "off",
+      "planned_status_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-STATUS-70.json",
+      "planned_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-BASELINE-OUTCOME.json"
+    },
+    "hybrid": {
+      "label": "bounded_hybrid_candidate",
+      "hybrid_runtime_mode": "on",
+      "planned_status_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-STATUS-70.json",
+      "planned_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-HYBRID-OUTCOME.json"
+    }
+  },
+  "comparison_outcome_artifact": ".planning/phases/06-baseline-versus-hybrid-evaluation/06-COMPARISON-OUTCOME.json",
+  "benchmark_mode": "core2",
+  "benchmark_fast": true,
+  "question_ids": [
+    "f35224e0",
+    "195a1a1b",
+    "80ec1f4f",
+    "603deb26",
+    "gpt4_1916e0ea",
+    "76d63226",
+    "c960da58",
+    "09ba9854",
+    "5d3d2817",
+    "a40e080f",
+    "gpt4_2d58bcd6",
+    "gpt4_18c2b244",
+    "gpt4_5dcc0aab",
+    "gpt4_d84a3211",
+    "c7dc5443",
+    "19b5f2b3_abs",
+    "c4ea545c",
+    "6a27ffc2",
+    "e9327a54",
+    "8464fc84",
+    "b6025781",
+    "f523d9fe",
+    "27016adc",
+    "gpt4_6ed717ea",
+    "6456829e",
+    "gpt4_d12ceb0e",
+    "ccb36322",
+    "9ee3ecd6",
+    "gpt4_2f584639",
+    "gpt4_7f6b06db",
+    "eaca4986",
+    "dccbc061",
+    "7a8d0b71",
+    "6aeb4375_abs",
+    "2c63a862",
+    "gpt4_c27434e8_abs",
+    "71017276",
+    "4adc0475",
+    "gpt4_7a0daae1",
+    "29f2956b",
+    "3249768e",
+    "6cb6f249",
+    "bf659f65",
+    "d682f1a2",
+    "gpt4_70e84552",
+    "4100d0a0",
+    "b0479f84",
+    "b5ef892d",
+    "6c49646a",
+    "09ba9854_abs",
+    "8fb83627",
+    "c2ac3c61",
+    "618f13b2",
+    "d7c942c3",
+    "gpt4_4929293b",
+    "d52b4f67",
+    "gpt4_2487a7cb",
+    "69fee5aa",
+    "gpt4_b0863698",
+    "06f04340",
+    "a3332713",
+    "gpt4_fe651585",
+    "gpt4_213fd887",
+    "0db4c65d",
+    "c8c3f81d",
+    "6a1eabeb",
+    "gpt4_f420262d",
+    "d851d5ba",
+    "1568498a",
+    "6071bd76"
+  ],
+  "local_prereq_commands": {
+    "baseline": "CORE2_HYBRID_SUBSTRATE_MODE=off ./.venv/bin/python -m pytest tests/agent/test_core2_handmade_acceptance.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_answer_contract.py -q",
+    "hybrid": "CORE2_HYBRID_SUBSTRATE_MODE=on ./.venv/bin/python -m pytest tests/agent/test_core2_hybrid_substrate.py tests/agent/test_core2_retrieval_routing.py tests/agent/test_core2_generic_surface_generalization.py tests/agent/test_core2_handmade_acceptance.py -q"
+  },
+  "verdict_thresholds": {
+    "promote_candidate": {
+      "requires_no_kernel_regressions": true,
+      "requires_no_truth_state_regressions": true,
+      "min_pass_rate_delta": 0.1,
+      "min_answer_surface_hit_rate_delta": 0.1
+    },
+    "keep_baseline": {
+      "any_kernel_regression": true,
+      "non_positive_pass_rate_delta": true
+    },
+    "mixed_hold": {
+      "otherwise": true
+    }
+  },
+  "verdict_precedence": [
+    "keep_baseline",
+    "mixed_hold",
+    "promote_candidate"
+  ],
+  "stop_rules": [
+    "Do not edit Core2 kernel, hybrid substrate, or benchmark harness during comparison execution.",
+    "Do not change the frozen question set after execution starts.",
+    "Do not change thresholds after seeing the results.",
+    "Do not treat retrieval-only gains as full memory wins.",
+    "Derive the final human-readable verdict from the canonical comparison outcome artifact, not from prose summaries."
+  ]
+}
