@@ -2,7 +2,7 @@
 
 > **⚠️ Public review repository — not an MVP, not a release.** This is a snapshot of the kernel architecture and planning documents, shared for external review and discussion.
 
-> *What if your AI agent actually remembered things correctly — not just approximately, not just recently, but with provenance, temporal validity, and the ability to say "I don't know" when it should?*
+> *A second-brain memory kernel for AI agents — built around engram-style knowledge graphs, temporal decay, and structured truth. Designed to handle 5,000+ books, not just chat history.*
 
 **Hemu** is an experimental long-term memory kernel for AI agents. It is a complete ground-up rewrite — not a wrapper, not an integration layer, not another vector store with a thin API on top. It is a minimal, disciplined memory engine that knows the difference between *what was true*, *what is true now*, and *what it cannot reliably answer*.
 
@@ -114,15 +114,23 @@ The kernel has completed **7 hardening phases** (04.1 → 04.7):
 
 ---
 
-## Honest Open Questions
+## 🙏 Looking for Feedback — Can You Help?
 
-This is not a finished product. These are the real open questions:
+I am not a traditional developer. I am a vibe-coder: I design, research, and instruct LLMs to build. This entire kernel was designed through careful planning documents, hard laws, and iterative AI-assisted implementation.
 
-1. **Are 5 canonical object types enough at scale?** (`entity`, `event`, `state`, `measure`, `source`) — Proven up to ~1k document corpus. 5k-scale is the next proof obligation.
-2. **When does the proposition/claim layer become necessary?** Explicitly deferred — but complex relation and multi-hop queries will force this decision.
-3. **Which local embedding model wins on commodity hardware?** Default: Jina-v5-class. Challengers: `BAAI/bge-m3`, `intfloat/multilingual-e5-large`.
-4. **Is the bitemporal model deep enough for legal/medical corpora?** Two-axis model (`event time` + `system time`) is in. Deeper versioning is an open question.
-5. **38 tests + 5/5 canary: is that enough to justify the next paid rerun?** That is the active question.
+The architecture is mine. The code came from that architecture. But I need external eyes on whether the direction is actually sound before I keep going.
+
+**If you are a senior developer, AI/ML engineer, or someone who has built agent memory systems — I would genuinely appreciate your input on:**
+
+1. **Is the core concept viable?** Five-plane unidirectional data flow, write-time intelligence, typed answer contracts with hard token budgets — does this hold up architecturally, or are there structural issues I am not seeing?
+
+2. **Is this worth continuing?** The ambition is real: engram-style knowledge graphs, temporal decay, 5,000+ book corpus support, multilingual-neutral core. Is there a credible path here, or does this kind of project collapse under its own weight in practice?
+
+3. **How do you keep an LLM from drifting on a project like this?** The biggest challenge working this way is preventing the AI from patching instead of replacing, layering instead of compressing, and optimizing for the benchmark instead of the real use case. The `plan6.md` and `plan7vegrehajt.md` files are my attempt at guardrails. Are they the right kind?
+
+4. **Where would you look first?** If you read through `core2_routing.py` and `core2_runtime.py` and spotted a problem — I want to know. Specific feedback is more valuable than general impressions.
+
+Feel free to open an issue or reach out.
 
 ---
 
