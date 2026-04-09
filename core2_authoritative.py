@@ -912,7 +912,7 @@ def _extract_temporal_elapsed_answer(query: str, items: Iterable[Core2RecallItem
         return None
     reading_subject = raw_titles[0].strip() if raw_titles else ""
     return {
-        "text": f"Answer: {elapsed_days} days.",
+        "text": f"Answer: {elapsed_days} days had passed since finishing '{reading_subject}'." if reading_subject else f"Answer: {elapsed_days} days.",
         "mode": "temporal_elapsed",
         "structured": {
             "kind": "temporal_elapsed",
