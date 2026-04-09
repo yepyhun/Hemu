@@ -1,0 +1,44 @@
+{
+  "schema_version": "phase15.v1",
+  "focused_proof": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_longmemeval_benchmark.py -q",
+    "result": "33 passed in 6.71s"
+  },
+  "wider_regression": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_*.py -q",
+    "result": "145 passed in 13.52s"
+  },
+  "canonical_sample_summary": {
+    "total_cases": 4,
+    "label_counts": {
+      "retrieval_failure": 1,
+      "sufficiency_failure": 1,
+      "delivery_surface_failure": 1,
+      "judge_false_negative": 1
+    },
+    "stage_counts": {
+      "retrieval": 1,
+      "sufficiency": 1,
+      "reasoning_delivery": 1,
+      "judge_like": 1
+    },
+    "evidence_present_cases": 3,
+    "sufficient_retrieval_cases": 2,
+    "answer_surface_hit_cases": 2,
+    "selector_engaged_cases": 2,
+    "aggregation_safety_abstentions": 1,
+    "judge_like_cases": 1,
+    "evidence_present_rate": 0.75,
+    "sufficient_retrieval_rate": 0.5,
+    "answer_surface_hit_rate": 0.5,
+    "selector_engaged_rate": 0.5
+  },
+  "sample_labels": [
+    "retrieval_failure",
+    "sufficiency_failure",
+    "delivery_surface_failure",
+    "judge_false_negative"
+  ],
+  "verdict": "go",
+  "note": "Phase 15 now emits a bounded per-case attribution contract from existing benchmark rows and route notes without opening a second diagnostics subsystem."
+}

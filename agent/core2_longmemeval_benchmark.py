@@ -7,7 +7,7 @@ import re
 import time
 from collections import Counter, defaultdict
 from contextlib import ExitStack
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -141,6 +141,11 @@ class Core2LongMemEvalRunResult:
     promptless_authoritative: bool = False
     local_comparator: str = ""
     local_comparator_reason: str = ""
+    route_notes: List[str] = field(default_factory=list)
+    support_confidence: str = ""
+    temporal_confidence: str = ""
+    resolution_confidence: str = ""
+    identity_confidence: str = ""
 
     def as_dict(self) -> Dict[str, Any]:
         payload = asdict(self)
@@ -811,6 +816,157 @@ def _failure_family(pattern: str) -> str:
     return "unknown"
 
 
+PIPELINE_ATTRIBUTION_LABELS = (
+    "passed",
+    "retrieval_failure",
+    "sufficiency_failure",
+    "reasoning_failure",
+    "delivery_surface_failure",
+    "judge_false_positive",
+    "judge_false_negative",
+    "latency_abort",
+)
+
+PIPELINE_ATTRIBUTION_STAGE_BUCKETS = (
+    "passed",
+    "retrieval",
+    "sufficiency",
+    "reasoning_delivery",
+    "judge_like",
+    "latency",
+)
+
+
+def _normalized_route_notes(item: Dict[str, Any]) -> List[str]:
+    raw = item.get("route_notes") or []
+    if not isinstance(raw, list):
+        return []
+    return [str(note).strip() for note in raw if str(note).strip()]
+
+
+def _judge_false_positive(item: Dict[str, Any]) -> bool:
+    if not bool(item.get("passed")):
+        return False
+    if bool(item.get("evidence_contains_answer")) or bool(item.get("answer_surface_hit")):
+        return False
+    if bool(item.get("recall_abstained")):
+        return False
+    if int(item.get("evidence_item_count") or 0) <= 0:
+        return False
+    judge = str(item.get("judge") or "").strip().lower()
+    return judge.startswith("yes")
+
+
+def build_pipeline_attribution_record(result: Dict[str, Any]) -> Dict[str, Any]:
+    item = dict(result or {})
+    failure_pattern = str(item.get("failure_pattern") or "").strip().lower()
+    route_notes = _normalized_route_notes(item)
+    evidence_contains_answer = bool(item.get("evidence_contains_answer"))
+    answer_surface_hit = bool(item.get("answer_surface_hit"))
+    recall_abstained = bool(item.get("recall_abstained"))
+    passed = bool(item.get("passed"))
+
+    if failure_pattern == "latency_abort":
+        stage_bucket = "latency"
+        attribution_label = "latency_abort"
+        short_reason = "latency threshold exceeded before a stable diagnostic outcome"
+    elif _judge_false_positive(item):
+        stage_bucket = "judge_like"
+        attribution_label = "judge_false_positive"
+        short_reason = "judge accepted an answer without grounded evidence or authoritative surface support"
+    elif failure_pattern == "judge_artifact":
+        stage_bucket = "judge_like"
+        attribution_label = "judge_false_negative"
+        short_reason = "judge-like rejection despite promptless authoritative support"
+    elif passed:
+        stage_bucket = "passed"
+        attribution_label = "passed"
+        short_reason = "case passed"
+    elif recall_abstained or int(item.get("evidence_item_count") or 0) <= 0 or not evidence_contains_answer:
+        stage_bucket = "retrieval"
+        attribution_label = "retrieval_failure"
+        short_reason = "retrieval did not surface answer-bearing evidence"
+    elif not answer_surface_hit:
+        stage_bucket = "sufficiency"
+        attribution_label = "sufficiency_failure"
+        short_reason = "evidence was present but did not produce a sufficient authoritative answer surface"
+    elif failure_pattern in {"prompt_miss", "grounding_handoff_miss", "handoff_format_miss"}:
+        stage_bucket = "reasoning_delivery"
+        attribution_label = "delivery_surface_failure"
+        short_reason = "downstream delivery or handoff failed after grounded evidence was available"
+    else:
+        stage_bucket = "reasoning_delivery"
+        attribution_label = "reasoning_failure"
+        short_reason = "downstream reasoning or execution failed after grounded evidence retrieval"
+
+    return {
+        "question_id": str(item.get("question_id") or "").strip(),
+        "question_type": str(item.get("question_type") or "unknown"),
+        "passed": passed,
+        "judge": str(item.get("judge") or "").strip(),
+        "failure_pattern": failure_pattern,
+        "attribution_label": attribution_label,
+        "stage_bucket": stage_bucket,
+        "recall_route_family": str(item.get("recall_route_family") or ""),
+        "recall_query_family": str(item.get("recall_query_family") or ""),
+        "route_notes": route_notes,
+        "evidence_item_count": int(item.get("evidence_item_count") or 0),
+        "evidence_contains_answer": evidence_contains_answer,
+        "answer_surface_hit": answer_surface_hit,
+        "answer_surface_mode": str(item.get("answer_surface_mode") or ""),
+        "answer_surface_family": str(item.get("answer_surface_family") or ""),
+        "promptless_authoritative": bool(item.get("promptless_authoritative")),
+        "selector_engaged": "hybrid_budgeted_selector" in route_notes,
+        "constituent_expanded": "hybrid_constituent_expand" in route_notes,
+        "aggregation_safety_abstained": "hybrid_aggregation_safety_abstain" in route_notes,
+        "recall_abstained": recall_abstained,
+        "support_confidence": str(item.get("support_confidence") or ""),
+        "temporal_confidence": str(item.get("temporal_confidence") or ""),
+        "resolution_confidence": str(item.get("resolution_confidence") or ""),
+        "identity_confidence": str(item.get("identity_confidence") or ""),
+        "local_comparator": str(item.get("local_comparator") or ""),
+        "local_comparator_reason": str(item.get("local_comparator_reason") or ""),
+        "sufficient_retrieval": bool(evidence_contains_answer and answer_surface_hit),
+        "judge_like": stage_bucket == "judge_like",
+        "short_reason": short_reason,
+    }
+
+
+def build_pipeline_attribution_artifact(report: Dict[str, Any]) -> Dict[str, Any]:
+    results = [dict(item or {}) for item in list(report.get("results") or [])]
+    records = [build_pipeline_attribution_record(item) for item in results]
+    total = len(records)
+    label_counts = dict(Counter(str(item.get("attribution_label") or "") for item in records))
+    stage_counts = dict(Counter(str(item.get("stage_bucket") or "") for item in records))
+    evidence_present = sum(1 for item in records if item.get("evidence_contains_answer"))
+    sufficient_retrieval = sum(1 for item in records if item.get("sufficient_retrieval"))
+    answer_surface_hits = sum(1 for item in records if item.get("answer_surface_hit"))
+    selector_engaged = sum(1 for item in records if item.get("selector_engaged"))
+    aggregation_safety = sum(1 for item in records if item.get("aggregation_safety_abstained"))
+    judge_like = sum(1 for item in records if item.get("judge_like"))
+    return {
+        "schema_version": "phase15.v1",
+        "labels": list(PIPELINE_ATTRIBUTION_LABELS),
+        "stage_buckets": list(PIPELINE_ATTRIBUTION_STAGE_BUCKETS),
+        "summary": {
+            "total_cases": total,
+            "label_counts": label_counts,
+            "stage_counts": stage_counts,
+            "evidence_present_cases": evidence_present,
+            "sufficient_retrieval_cases": sufficient_retrieval,
+            "answer_surface_hit_cases": answer_surface_hits,
+            "selector_engaged_cases": selector_engaged,
+            "aggregation_safety_abstentions": aggregation_safety,
+            "judge_like_cases": judge_like,
+            "evidence_present_rate": round(evidence_present / total, 4) if total else 0.0,
+            "sufficient_retrieval_rate": round(sufficient_retrieval / total, 4) if total else 0.0,
+            "answer_surface_hit_rate": round(answer_surface_hits / total, 4) if total else 0.0,
+            "selector_engaged_rate": round(selector_engaged / total, 4) if total else 0.0,
+        },
+        "records": records,
+    }
+
+
 def select_benchmark_fast_profile(entry: dict[str, Any]) -> str:
     question = f" {str(entry.get('question') or '').strip().lower()} "
     question_type = str(entry.get("question_type") or "").strip().lower()
@@ -954,10 +1110,17 @@ def run_core2_longmemeval_generation(
             agent._save_trajectory = lambda messages, user_message, completed: None
             agent._save_session_log = lambda messages: None
             conversation_started = time.perf_counter()
-            result = agent.run_conversation(str(entry["question"]))
+            raw_result = agent.run_conversation(str(entry["question"]))
             conversation_seconds = time.perf_counter() - conversation_started
+            # Some provider failure paths return a partial failure dict without
+            # final_response. Normalize that shape so the benchmark records an
+            # honest failed run instead of crashing its own harness.
+            if isinstance(raw_result, dict):
+                result = dict(raw_result)
+            else:
+                result = {"final_response": str(raw_result or "")}
 
-        hypothesis = str(result["final_response"] or "").strip()
+        hypothesis = str(result.get("final_response") or "").strip()
         prompt_excerpt = str(captured.get("prompt") or "")[:2400]
         answer = str(entry.get("answer") or "").strip()
         terms = _question_terms(str(entry.get("question") or ""))
@@ -986,6 +1149,7 @@ def run_core2_longmemeval_generation(
         recall_abstained = bool(recall_packet.get("abstained")) if recall_packet else False
         recall_route_family = str(recall_packet.get("route_family") or "")
         recall_query_family = str(recall_packet.get("query_family") or "")
+        route_notes = [str(note).strip() for note in list((recall_packet.get("route_plan") or {}).get("notes") or []) if str(note).strip()]
         answer_surface = dict(recall_packet.get("answer_surface") or {}) if recall_packet else {}
         answer_surface_mode = str(answer_surface.get("mode") or "").strip().lower()
         answer_surface_family = str(answer_surface.get("family") or "").strip()
@@ -993,6 +1157,10 @@ def run_core2_longmemeval_generation(
             str(answer_surface.get("text") or "").strip()
         )
         promptless_authoritative = answer_surface_hit and int(result.get("api_calls") or 0) == 0
+        support_confidence = str(recall_packet.get("support_confidence") or "") if recall_packet else ""
+        temporal_confidence = str(recall_packet.get("temporal_confidence") or "") if recall_packet else ""
+        resolution_confidence = str(recall_packet.get("resolution_confidence") or "") if recall_packet else ""
+        identity_confidence = str(recall_packet.get("identity_confidence") or "") if recall_packet else ""
 
         prompt_tokens_estimate = estimate_text_tokens(prompt_excerpt)
         baseline_replay_tokens_estimate = estimate_message_tokens(_naive_baseline_messages(entry))
@@ -1108,6 +1276,11 @@ def run_core2_longmemeval_generation(
             promptless_authoritative=promptless_authoritative,
             local_comparator=local_comparator,
             local_comparator_reason=local_comparator_reason,
+            route_notes=route_notes,
+            support_confidence=support_confidence,
+            temporal_confidence=temporal_confidence,
+            resolution_confidence=resolution_confidence,
+            identity_confidence=identity_confidence,
         )
 
 
@@ -1273,7 +1446,11 @@ def build_gate_status_artifact(report: Dict[str, Any]) -> Dict[str, Any]:
 
 
 __all__ = [
+    "PIPELINE_ATTRIBUTION_LABELS",
+    "PIPELINE_ATTRIBUTION_STAGE_BUCKETS",
     "build_gate_status_artifact",
+    "build_pipeline_attribution_artifact",
+    "build_pipeline_attribution_record",
     "DEFAULT_BENCHMARK_BASE_URL",
     "DEFAULT_BENCHMARK_MODEL",
     "DEFAULT_CANARY_QUESTION_IDS",

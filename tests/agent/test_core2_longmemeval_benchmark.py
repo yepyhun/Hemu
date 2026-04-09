@@ -8,13 +8,17 @@ from agent.core2_longmemeval_benchmark import (
     Core2LongMemEvalRunResult,
     DEFAULT_CANARY_QUESTION_IDS,
     DEFAULT_DATASET,
+    PIPELINE_ATTRIBUTION_LABELS,
     _canonical_local_comparator,
     _failure_pattern,
     _judge_yes_no,
     _response_contains_answer,
     _seed_core2_kernel,
+    build_pipeline_attribution_artifact,
+    build_pipeline_attribution_record,
     build_gate_status_artifact,
     run_core2_longmemeval_subset,
+    run_core2_longmemeval_generation,
     select_benchmark_fast_profile,
 )
 from agent.core2_types import Core2RecallItem, Core2RecallPacket
@@ -325,6 +329,42 @@ def test_run_subset_supports_targeted_question_ids_and_latency_abort():
     assert report["results"][0]["failure_pattern"] == "latency_abort"
 
 
+def test_run_generation_tolerates_missing_final_response_from_failed_agent():
+    entry = _dataset_entry("6cb6f249")
+
+    class FakeAgent:
+        _interruptible_api_call = staticmethod(lambda *_args, **_kwargs: None)
+
+        def __init__(self, *args, **kwargs):
+            self.args = args
+            self.kwargs = kwargs
+
+        def run_conversation(self, _user_message):
+            return {
+                "failed": True,
+                "error": "Invalid API response shape. Likely rate limited or malformed provider response.",
+                "api_calls": 1,
+            }
+
+    with (
+        patch("agent.core2_longmemeval_benchmark._seed_core2_kernel", return_value=2),
+        patch("run_agent.AIAgent", FakeAgent),
+        patch("agent.core2_longmemeval_benchmark._judge_yes_no", return_value="no"),
+    ):
+        result = run_core2_longmemeval_generation(
+            entry=entry,
+            mode="core2",
+            model="demo-model",
+            base_url="https://example.invalid/v1",
+            api_key="test-key",
+            provider="cometapi",
+        )
+
+    assert result.hypothesis == ""
+    assert result.passed is False
+    assert result.judge == "no"
+
+
 def test_select_benchmark_fast_profile_prefers_supported_for_comparison_timeline_questions():
     entry = _dataset_entry("gpt4_2d58bcd6")
 
@@ -378,6 +418,160 @@ def test_build_gate_status_artifact_summarizes_latest_gate_state():
     assert artifact["authoritative_status_source"] == "04.1-GATE-STATUS.json"
     assert artifact["canary_question_ids"] == list(DEFAULT_CANARY_QUESTION_IDS)
     assert artifact["latest_question_ids"] == ["a", "b"]
+
+
+def test_build_pipeline_attribution_record_marks_retrieval_failure_when_no_answer_bearing_evidence():
+    record = build_pipeline_attribution_record(
+        {
+            "question_id": "q-retrieval",
+            "question_type": "multi-session",
+            "passed": False,
+            "judge": "no",
+            "failure_pattern": "retrieval_or_reasoning_miss",
+            "recall_abstained": False,
+            "recall_route_family": "curated_memory_view",
+            "recall_query_family": "personal_recall",
+            "evidence_item_count": 3,
+            "evidence_contains_answer": False,
+            "answer_surface_hit": False,
+            "route_notes": ["hybrid_budgeted_selector"],
+        }
+    )
+
+    assert record["attribution_label"] == "retrieval_failure"
+    assert record["stage_bucket"] == "retrieval"
+    assert record["selector_engaged"] is True
+    assert record["sufficient_retrieval"] is False
+
+
+def test_build_pipeline_attribution_record_marks_sufficiency_failure_when_surface_missing():
+    record = build_pipeline_attribution_record(
+        {
+            "question_id": "q-sufficiency",
+            "question_type": "temporal-reasoning",
+            "passed": False,
+            "judge": "no",
+            "failure_pattern": "retrieval_or_reasoning_miss",
+            "recall_abstained": False,
+            "recall_route_family": "semantic-first",
+            "recall_query_family": "relation_multihop",
+            "evidence_item_count": 2,
+            "evidence_contains_answer": True,
+            "answer_surface_hit": False,
+            "route_notes": ["hybrid_constituent_expand"],
+        }
+    )
+
+    assert record["attribution_label"] == "sufficiency_failure"
+    assert record["stage_bucket"] == "sufficiency"
+    assert record["constituent_expanded"] is True
+
+
+def test_build_pipeline_attribution_record_marks_delivery_surface_failure_for_handoff():
+    record = build_pipeline_attribution_record(
+        {
+            "question_id": "q-delivery",
+            "question_type": "knowledge-update",
+            "passed": False,
+            "judge": "no_local_comparator",
+            "failure_pattern": "handoff_format_miss",
+            "recall_abstained": False,
+            "recall_route_family": "curated_memory_view",
+            "recall_query_family": "personal_recall",
+            "evidence_item_count": 2,
+            "evidence_contains_answer": True,
+            "answer_surface_hit": True,
+            "route_notes": ["hybrid_budgeted_selector", "hybrid_aggregation_safety_abstain"],
+        }
+    )
+
+    assert record["attribution_label"] == "delivery_surface_failure"
+    assert record["stage_bucket"] == "reasoning_delivery"
+    assert record["aggregation_safety_abstained"] is True
+
+
+def test_build_pipeline_attribution_record_marks_judge_false_negative_for_judge_artifact():
+    record = build_pipeline_attribution_record(
+        {
+            "question_id": "q-judge",
+            "question_type": "temporal-reasoning",
+            "passed": False,
+            "judge": "unknown",
+            "failure_pattern": "judge_artifact",
+            "recall_abstained": False,
+            "recall_route_family": "curated_memory_view",
+            "recall_query_family": "personal_recall",
+            "evidence_item_count": 1,
+            "evidence_contains_answer": True,
+            "answer_surface_hit": True,
+            "promptless_authoritative": True,
+        }
+    )
+
+    assert record["attribution_label"] == "judge_false_negative"
+    assert record["stage_bucket"] == "judge_like"
+    assert record["judge_like"] is True
+
+
+def test_build_pipeline_attribution_artifact_summarizes_stage_and_label_counts():
+    artifact = build_pipeline_attribution_artifact(
+        {
+            "results": [
+                {
+                    "question_id": "q1",
+                    "question_type": "multi-session",
+                    "passed": False,
+                    "judge": "no",
+                    "failure_pattern": "retrieval_or_reasoning_miss",
+                    "recall_abstained": False,
+                    "recall_route_family": "curated_memory_view",
+                    "recall_query_family": "personal_recall",
+                    "evidence_item_count": 2,
+                    "evidence_contains_answer": False,
+                    "answer_surface_hit": False,
+                    "route_notes": ["hybrid_budgeted_selector"],
+                },
+                {
+                    "question_id": "q2",
+                    "question_type": "temporal-reasoning",
+                    "passed": False,
+                    "judge": "unknown",
+                    "failure_pattern": "judge_artifact",
+                    "recall_abstained": False,
+                    "recall_route_family": "curated_memory_view",
+                    "recall_query_family": "personal_recall",
+                    "evidence_item_count": 1,
+                    "evidence_contains_answer": True,
+                    "answer_surface_hit": True,
+                    "promptless_authoritative": True,
+                },
+                {
+                    "question_id": "q3",
+                    "question_type": "single-session-user",
+                    "passed": True,
+                    "judge": "yes_exact_match",
+                    "failure_pattern": "passed",
+                    "recall_abstained": False,
+                    "recall_route_family": "curated_memory_view",
+                    "recall_query_family": "personal_recall",
+                    "evidence_item_count": 1,
+                    "evidence_contains_answer": True,
+                    "answer_surface_hit": True,
+                },
+            ]
+        }
+    )
+
+    assert artifact["schema_version"] == "phase15.v1"
+    assert artifact["labels"] == list(PIPELINE_ATTRIBUTION_LABELS)
+    assert artifact["summary"]["total_cases"] == 3
+    assert artifact["summary"]["label_counts"]["retrieval_failure"] == 1
+    assert artifact["summary"]["label_counts"]["judge_false_negative"] == 1
+    assert artifact["summary"]["label_counts"]["passed"] == 1
+    assert artifact["summary"]["stage_counts"]["judge_like"] == 1
+    assert artifact["summary"]["selector_engaged_cases"] == 1
+    assert artifact["summary"]["evidence_present_cases"] == 2
+    assert artifact["summary"]["sufficient_retrieval_cases"] == 2
 
 
 def test_tool_budget_profiles_are_graded_instead_of_binary():

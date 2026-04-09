@@ -1,0 +1,26 @@
+{
+  "phase": 22,
+  "milestone": "v1.16",
+  "status": "execute_complete",
+  "fixed_ten_cases": 10,
+  "short_circuit_cases": 2,
+  "authoritative_payload_cases": 2,
+  "authoritative_payload_correct_cases": 0,
+  "surface_text_cases": 2,
+  "packet_contains_answer_cases": 2,
+  "non_short_circuit_prompt_contains_surface_cases": 0,
+  "seam_counts": {
+    "answer_surface_fallback_only": 2,
+    "authoritative_payload_wrong": 2,
+    "no_promptless_authoritative_bridge": 5,
+    "answer_bearing_packet_not_bridged": 1
+  },
+  "surface_mode_counts": {
+    "fallback": 2,
+    "fact_plus_summary": 2,
+    "none": 6
+  },
+  "dominant_seam_family": "no_promptless_authoritative_bridge",
+  "carry_forward_recommendation": "bounded_authoritative_surface_payload_expansion",
+  "external_improvement_claim": false
+}

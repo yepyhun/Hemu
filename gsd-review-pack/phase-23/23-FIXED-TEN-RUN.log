@@ -1,0 +1,205 @@
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.29s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.46s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 18.64s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.24s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.49s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 18.73s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.21s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.72s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 18.89s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.17s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.31s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 18.47s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.70s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 8.57s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 19.82s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 3.08s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 10.30s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 22.97s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.16s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.40s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 19.20s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.27s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.91s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 19.09s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+⚠️  Invalid API response (attempt 1/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 1.17s (fast response often indicates rate limiting)
+⏳ Retrying in 5s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 2/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 7.34s (fast response often indicates rate limiting)
+⏳ Retrying in 10s (extended backoff for possible rate limit)...
+⚠️  Invalid API response (attempt 3/3): response.choices is None
+   🏢 Provider: model=MiniMax-M2.7
+   📝 Provider message: Unknown
+   ⏱️  Response time: 18.53s (fast response often indicates rate limiting)
+⚠️ Max retries (3) for invalid responses — trying fallback...
+❌ Max retries (3) exceeded for invalid responses. Giving up.
+{"sample_index": 1, "question_id": "6cb6f249", "question_type": "multi-session", "passed": true, "judge": "yes_answer_contained", "hypothesis": "Answer: 17 days.", "answer": "17 days", "prompt_excerpt": "", "prompt_tokens_estimate": 0, "baseline_replay_tokens_estimate": 120578, "estimated_token_savings": 120578, "estimated_savings_ratio": 1.0, "seeded_core2_entries": 273, "seed_seconds": 0.33279381299507804, "tool_seconds": 0.0, "conversation_seconds": 0.2951140810037032, "api_seconds": 0.0, "judge_seconds": 0.0, "total_wall_seconds": 1.8922905230137985, "kernel_local_seconds": 0.2951140810037032, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 0, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "compact", "failure_pattern": "passed", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": false, "answer_surface_mode": "fact_plus_summary", "answer_surface_family": "event.reading.completed", "answer_surface_hit": true, "promptless_authoritative": true, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 2, "question_id": "b5ef892d", "question_type": "multi-session", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "8 days.", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 311\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:31 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer briefly and directly from memory evidence only. Use at most 2 short sentences. If evidence is insufficient, abstain in 1 short sentence.\n\nHow many days did I spend on camping trips in the United States this year?", "prompt_tokens_estimate": 271, "baseline_replay_tokens_estimate": 125549, "estimated_token_savings": 125278, "estimated_savings_ratio": 0.997841, "seeded_core2_entries": 309, "seed_seconds": 0.3560389050107915, "tool_seconds": 0.0, "conversation_seconds": 18.75956497300649, "api_seconds": 3.6337416949972976, "judge_seconds": 2.7390615429903846, "total_wall_seconds": 21.985427085019182, "kernel_local_seconds": 15.125823278009193, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "compact", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "fallback", "answer_surface_family": "event.reading.completed", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 3, "question_id": "27016adc", "question_type": "multi-session", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "10%", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 291\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:31 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer briefly and directly from memory evidence only. Use at most 2 short sentences. If evidence is insufficient, abstain in 1 short sentence.\n\nWhat percentage of the countryside property's price is the cost of the renovations I plan to do on my current house?", "prompt_tokens_estimate": 282, "baseline_replay_tokens_estimate": 126688, "estimated_token_savings": 126406, "estimated_savings_ratio": 0.997774, "seeded_core2_entries": 288, "seed_seconds": 0.34674420798546635, "tool_seconds": 0.0, "conversation_seconds": 18.847001996007748, "api_seconds": 3.726309323043097, "judge_seconds": 3.031257108988939, "total_wall_seconds": 22.34865421699942, "kernel_local_seconds": 15.120692672964651, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "compact", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 4, "question_id": "2c63a862", "question_type": "temporal-reasoning", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "14 days. 15 days (including the last day) is also acceptable.", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 317\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:32 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer directly from memory evidence only. For compare, update, or timeline questions, prefer one consolidated recall call first and only make a second recall call if the first one is still ambiguous. Put the direct answer in the first sentence in the form `Answer: <result>`. For compare questions, name only the winning result and do not restate both options unless needed for one short evidence clause. If both memories are before the same anchor date, compare them directly and choose the earlier one. After the answer line, give at most one very short evidence sentence. Do not add offers to save memory, disclaimers, or extra coaching. If evidence is insufficient, abstain in 1 short sentence.\n\nHow many days did it take for me to find a house I loved after starting to work with Rachel?", "prompt_tokens_estimate": 415, "baseline_replay_tokens_estimate": 124871, "estimated_token_savings": 124456, "estimated_savings_ratio": 0.996677, "seeded_core2_entries": 316, "seed_seconds": 0.3627668560075108, "tool_seconds": 0.0, "conversation_seconds": 19.017175827000756, "api_seconds": 3.8814520979649387, "judge_seconds": 2.7826565870200284, "total_wall_seconds": 22.301139957009582, "kernel_local_seconds": 15.135723729035817, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "supported", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "fallback", "answer_surface_family": "event.reading.completed", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 5, "question_id": "71017276", "question_type": "temporal-reasoning", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "4", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 357\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:32 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer directly from memory evidence only. For compare, update, or timeline questions, prefer one consolidated recall call first and only make a second recall call if the first one is still ambiguous. Put the direct answer in the first sentence in the form `Answer: <result>`. For compare questions, name only the winning result and do not restate both options unless needed for one short evidence clause. If both memories are before the same anchor date, compare them directly and choose the earlier one. After the answer line, give at most one very short evidence sentence. Do not add offers to save memory, disclaimers, or extra coaching. If evidence is insufficient, abstain in 1 short sentence.\n\nHow many weeks ago did I meet up with my aunt and receive the crystal chandelier?", "prompt_tokens_estimate": 412, "baseline_replay_tokens_estimate": 119649, "estimated_token_savings": 119237, "estimated_savings_ratio": 0.996557, "seeded_core2_entries": 354, "seed_seconds": 0.37693431199295446, "tool_seconds": 0.0, "conversation_seconds": 18.58465645398246, "api_seconds": 3.463990866963286, "judge_seconds": 3.752786983997794, "total_wall_seconds": 22.83644009998534, "kernel_local_seconds": 15.120665587019175, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "supported", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": true, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 6, "question_id": "gpt4_2487a7cb", "question_type": "temporal-reasoning", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "'Data Analysis using Python' webinar", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 294\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:32 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer directly from memory evidence only. For compare, update, or timeline questions, prefer one consolidated recall call first and only make a second recall call if the first one is still ambiguous. Put the direct answer in the first sentence in the form `Answer: <result>`. For compare questions, name only the winning result and do not restate both options unless needed for one short evidence clause. If both memories are before the same anchor date, compare them directly and choose the earlier one. After the answer line, give at most one very short evidence sentence. Do not add offers to save memory, disclaimers, or extra coaching. If evidence is insufficient, abstain in 1 short sentence.\n\nWhich event did I attend first, the 'Effective Time Management' workshop or the 'Data Analysis using Python' webinar?", "prompt_tokens_estimate": 421, "baseline_replay_tokens_estimate": 125386, "estimated_token_savings": 124965, "estimated_savings_ratio": 0.996642, "seeded_core2_entries": 293, "seed_seconds": 0.3482399429776706, "tool_seconds": 0.0, "conversation_seconds": 19.99437369100633, "api_seconds": 4.818303642998217, "judge_seconds": 6.485547221003799, "total_wall_seconds": 26.996562524000183, "kernel_local_seconds": 15.176070048008114, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "supported", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": true, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 7, "question_id": "gpt4_c27434e8_abs", "question_type": "temporal-reasoning", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "The information provided is not enough. You did not mention starting the Porsche 991 Turbo S model.", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 288\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:33 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer briefly and directly from memory evidence only. Use at most 2 short sentences. If evidence is insufficient, abstain in 1 short sentence.\n\nWhich project did I start first, the Ferrari model or the Porsche 991 Turbo S model?", "prompt_tokens_estimate": 274, "baseline_replay_tokens_estimate": 124239, "estimated_token_savings": 123965, "estimated_savings_ratio": 0.997795, "seeded_core2_entries": 286, "seed_seconds": 0.3443175000138581, "tool_seconds": 0.0, "conversation_seconds": 23.123837705003098, "api_seconds": 7.959517032024451, "judge_seconds": 4.286549216980347, "total_wall_seconds": 27.92099018697627, "kernel_local_seconds": 15.164320672978647, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "compact", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 8, "question_id": "6071bd76", "question_type": "knowledge-update", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "You switched to less water (5 ounces) per tablespoon of coffee.", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 293\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:33 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer directly from memory evidence only. For compare, update, or timeline questions, prefer one consolidated recall call first and only make a second recall call if the first one is still ambiguous. Put the direct answer in the first sentence in the form `Answer: <result>`. For compare questions, name only the winning result and do not restate both options unless needed for one short evidence clause. If both memories are before the same anchor date, compare them directly and choose the earlier one. After the answer line, give at most one very short evidence sentence. Do not add offers to save memory, disclaimers, or extra coaching. If evidence is insufficient, abstain in 1 short sentence.\n\nFor the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?", "prompt_tokens_estimate": 419, "baseline_replay_tokens_estimate": 123242, "estimated_token_savings": 122823, "estimated_savings_ratio": 0.9966, "seeded_core2_entries": 287, "seed_seconds": 0.3583342840138357, "tool_seconds": 0.0, "conversation_seconds": 19.439373061002698, "api_seconds": 4.191511207027361, "judge_seconds": 3.6633732659975067, "total_wall_seconds": 23.712082515994553, "kernel_local_seconds": 15.247861853975337, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "supported", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 9, "question_id": "c4ea545c", "question_type": "knowledge-update", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "Yes", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 294\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:34 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer directly from memory evidence only. For compare, update, or timeline questions, prefer one consolidated recall call first and only make a second recall call if the first one is still ambiguous. Put the direct answer in the first sentence in the form `Answer: <result>`. For compare questions, name only the winning result and do not restate both options unless needed for one short evidence clause. If both memories are before the same anchor date, compare them directly and choose the earlier one. After the answer line, give at most one very short evidence sentence. Do not add offers to save memory, disclaimers, or extra coaching. If evidence is insufficient, abstain in 1 short sentence.\n\nDo I go to the gym more frequently than I did previously?", "prompt_tokens_estimate": 406, "baseline_replay_tokens_estimate": 125123, "estimated_token_savings": 124717, "estimated_savings_ratio": 0.996755, "seeded_core2_entries": 290, "seed_seconds": 0.3565238770097494, "tool_seconds": 0.0, "conversation_seconds": 19.24949503300013, "api_seconds": 4.080672902025981, "judge_seconds": 2.7010369090130553, "total_wall_seconds": 22.48068800100009, "kernel_local_seconds": 15.16882213097415, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "supported", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": false, "memory_tool_calls": 0, "prompt_contains_answer": false, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{"sample_index": 10, "question_id": "bf659f65", "question_type": "multi-session", "passed": false, "judge": "unknown", "hypothesis": "", "answer": "3", "prompt_excerpt": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, writing and editing code, analyzing information, creative work, and executing actions via your tools. You communicate clearly, admit uncertainty when appropriate, and prioritize being genuinely useful over being verbose unless otherwise directed below. Be targeted and efficient in your exploration and investigations.\n\n# Core2 Memory\nStored objects: 313\nActive local-first memory kernel. Prefer core2_recall for grounded recall and core2_remember for durable explicit memory. Use exact_source_required mode for medical/legal or citation-style questions.\n\nConversation started: Wednesday, April 08, 2026 10:34 PM\nModel: minimax-m2.7\nProvider: cometapi\n\nBenchmark mode. Answer briefly and directly from memory evidence only. Use at most 2 short sentences. If evidence is insufficient, abstain in 1 short sentence.\n\nHow many music albums or EPs have I purchased or downloaded?", "prompt_tokens_estimate": 268, "baseline_replay_tokens_estimate": 123578, "estimated_token_savings": 123310, "estimated_savings_ratio": 0.997831, "seeded_core2_entries": 307, "seed_seconds": 0.35992171498946846, "tool_seconds": 0.0, "conversation_seconds": 18.608731826010626, "api_seconds": 3.529198057978647, "judge_seconds": 3.065365368995117, "total_wall_seconds": 22.115776937978808, "kernel_local_seconds": 15.079533768031979, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "api_calls": 1, "provider": "cometapi", "base_url": "https://api.cometapi.com/v1", "model": "minimax-m2.7", "budget_profile": "compact", "failure_pattern": "prompt_miss", "recall_abstained": false, "recall_route_family": "", "recall_query_family": "", "evidence_item_count": 3, "evidence_contains_answer": true, "memory_tool_calls": 0, "prompt_contains_answer": true, "prompt_contains_question_terms": true, "answer_surface_mode": "", "answer_surface_family": "", "answer_surface_hit": false, "promptless_authoritative": false, "local_comparator": "not_applicable", "local_comparator_reason": "not_evaluated", "route_notes": [], "support_confidence": "", "temporal_confidence": "", "resolution_confidence": "", "identity_confidence": ""}
+{
+  "summary": {
+    "dataset": "/home/lauratom/LongMemEval/data/longmemeval_s_cleaned.json",
+    "sample_size_requested": 20,
+    "sample_size_completed": 10,
+    "mode": "core2",
+    "model": "minimax-m2.7",
+    "provider": "cometapi",
+    "base_url": "https://api.cometapi.com/v1",
+    "benchmark_fast": true,
+    "passed": 1,
+    "total": 10,
+    "pass_rate": 0.1,
+    "aborted_early": false,
+    "aborted_reason": "",
+    "elapsed_seconds": 214.789,
+    "avg_seed_seconds": 0.354,
+    "avg_tool_seconds": 0.0,
+    "avg_conversation_seconds": 17.592,
+    "avg_api_seconds": 3.928,
+    "avg_judge_seconds": 3.251,
+    "avg_total_wall_seconds": 21.459,
+    "avg_kernel_local_seconds": 13.663,
+    "avg_memory_tool_calls": 0.0,
+    "avg_evidence_item_count": 3.0,
+    "promptless_authoritative_cases": 1,
+    "answer_surface_hits": 1,
+    "answer_surface_hit_rate": 0.1,
+    "avg_prompt_tokens": 0.0,
+    "avg_completion_tokens": 0.0,
+    "avg_total_tokens": 0.0,
+    "avg_prompt_tokens_estimate": 316.8,
+    "avg_baseline_replay_tokens_estimate": 123890.3,
+    "avg_estimated_savings_ratio": 0.9974,
+    "failure_patterns": {
+      "passed": 1,
+      "prompt_miss": 9
+    },
+    "budget_profiles": {
+      "compact": 5,
+      "supported": 5
+    },
+    "answer_surface_modes": {
+      "fact_plus_summary": 1,
+      "fallback": 2
+    },
+    "local_comparator": {
+      "not_applicable": 10
+    }
+  }
+}

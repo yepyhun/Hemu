@@ -1,0 +1,17 @@
+{
+  "total_cases": 33,
+  "taxonomy_counts": {
+    "weak_or_partial_evidence": 15,
+    "wrong_subset_selection": 11,
+    "no_relevant_evidence": 4,
+    "unsupported_query_family": 3
+  },
+  "dominant_gap_class": "weak_or_partial_evidence",
+  "dominant_gap_count": 15,
+  "secondary_gap_class": "wrong_subset_selection",
+  "secondary_gap_count": 11,
+  "verdict": "aggregate_temporal_coverage_dominant",
+  "next_direction": "Bounded Aggregate-Temporal Retrieval Coverage Expansion",
+  "stop_rule": "Do not reopen delivery, ranking, or multiple retrieval bets until the dominant weak_or_partial_evidence bucket is either built against directly or explicitly falsified.",
+  "note": "This map is an upstream diagnostic artifact inferred from Phase 11 first-failure traces plus retrieval demand shape of the frozen 33-case subset."
+}

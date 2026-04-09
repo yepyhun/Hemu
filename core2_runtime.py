@@ -620,6 +620,18 @@ class Core2Runtime:
                 route_plan.notes.append("hybrid_raw_hit")
             if int(hybrid_trace.get("turn_hits") or 0) > 0:
                 route_plan.notes.append("hybrid_turn_hit")
+            if str(hybrid_trace.get("query_shape_operator_family") or "").strip():
+                route_plan.notes.append("hybrid_query_shape_schema")
+            if str(hybrid_trace.get("query_shape_signal_family") or "").strip():
+                route_plan.notes.append("hybrid_query_signal_primitive")
+            if int(hybrid_trace.get("query_shape_seed_expansions") or 0) > 0:
+                route_plan.notes.append("hybrid_query_shape_seed")
+            if int(hybrid_trace.get("constituent_expansions") or 0) > 0:
+                route_plan.notes.append("hybrid_constituent_expand")
+            if int(hybrid_trace.get("selector_expansions") or 0) > 0:
+                route_plan.notes.append("hybrid_budgeted_selector")
+            if int(hybrid_trace.get("aggregation_safety_abstentions") or 0) > 0:
+                route_plan.notes.append("hybrid_aggregation_safety_abstain")
             if self.hybrid_substrate.shadow_only:
                 route_plan.notes.append("hybrid_shadow_only")
 

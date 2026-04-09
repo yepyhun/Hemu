@@ -1,0 +1,42 @@
+{
+  "phase": 20,
+  "milestone": "v1.14",
+  "status": "negative_external_verdict",
+  "borrow_family": "legacy_query_signal_primitives",
+  "local_proof": {
+    "targeted_query_shape_tests": "10 passed",
+    "targeted_aggregate_temporal_tests": "4 passed",
+    "targeted_budgeted_selector_tests": "3 passed",
+    "core2_regression": "156 passed",
+    "non_core2_env_failures": "5 unrelated auxiliary-client failures in full tests/agent run"
+  },
+  "external_gate": {
+    "sample_size_requested": 10,
+    "sample_size_completed": 10,
+    "pass_rate": 0.0,
+    "passed": 0,
+    "total": 10,
+    "aborted_early": false,
+    "answer_surface_hit_rate": 0.2,
+    "promptless_authoritative_cases": 2,
+    "dominant_failure_pattern": "prompt_miss",
+    "dominant_failure_family": "handoff_format"
+  },
+  "attribution": {
+    "label_counts": {
+      "retrieval_failure": 8,
+      "sufficiency_failure": 1,
+      "delivery_surface_failure": 1
+    },
+    "stage_counts": {
+      "retrieval": 8,
+      "sufficiency": 1,
+      "reasoning_delivery": 1
+    },
+    "evidence_present_cases": 2,
+    "sufficient_retrieval_cases": 1,
+    "selector_engaged_cases": 0,
+    "aggregation_safety_abstentions": 0
+  },
+  "verdict": "The primitive borrow is locally sound but externally ineffective on the fixed representative ten-case gate."
+}

@@ -1,0 +1,268 @@
+[
+  {
+    "question_id": "f35224e0",
+    "question_type": "multi-session",
+    "question": "What is the total number of episodes I've listened to from 'How I Built This' and 'My Favorite Murder'?",
+    "answer": "27",
+    "abstention_case": false
+  },
+  {
+    "question_id": "80ec1f4f",
+    "question_type": "multi-session",
+    "question": "How many different museums or galleries did I visit in the month of February?",
+    "answer": "2",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_1916e0ea",
+    "question_type": "temporal-reasoning",
+    "question": "How many days passed between the day I cancelled my FarmFresh subscription and the day I did my online grocery shopping from Instacart?",
+    "answer": "54 days. 55 days (including the last day) is also acceptable.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "76d63226",
+    "question_type": "single-session-user",
+    "question": "What size is my new Samsung TV?",
+    "answer": "55-inch",
+    "abstention_case": false
+  },
+  {
+    "question_id": "09ba9854",
+    "question_type": "multi-session",
+    "question": "How much will I save by taking the train from the airport to my hotel instead of a taxi?",
+    "answer": "$50",
+    "abstention_case": false
+  },
+  {
+    "question_id": "a40e080f",
+    "question_type": "single-session-assistant",
+    "question": "I was going through our previous conversation and I was wondering if you could remind me of the two companies you mentioned that prioritize employee safety and well-being like Triumvirate?",
+    "answer": "Patagonia and Southwest Airlines.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_5dcc0aab",
+    "question_type": "temporal-reasoning",
+    "question": "Which pair of shoes did I clean last month?",
+    "answer": "white Adidas sneakers",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_d84a3211",
+    "question_type": "multi-session",
+    "question": "How much total money have I spent on bike-related expenses since the start of the year?",
+    "answer": "$185",
+    "abstention_case": false
+  },
+  {
+    "question_id": "19b5f2b3_abs",
+    "question_type": "single-session-user",
+    "question": "How long was I in Korea for?",
+    "answer": "You did not mention this information. You mentioned staying in Japan, but not in Korea.",
+    "abstention_case": true
+  },
+  {
+    "question_id": "c4ea545c",
+    "question_type": "knowledge-update",
+    "question": "Do I go to the gym more frequently than I did previously?",
+    "answer": "Yes",
+    "abstention_case": false
+  },
+  {
+    "question_id": "8464fc84",
+    "question_type": "single-session-assistant",
+    "question": "I'm planning to visit the Vatican again and I was wondering if you could remind me of the name of that famous deli near the Vatican that serves the best cured meats and cheeses?",
+    "answer": "Roscioli",
+    "abstention_case": false
+  },
+  {
+    "question_id": "b6025781",
+    "question_type": "single-session-preference",
+    "question": "I'm planning my meal prep next week, any suggestions for new recipes?",
+    "answer": "The user would prefer responses that suggest healthy meal prep recipes, especially those that incorporate quinoa and roasted vegetables, and offer variations in protein sources. They might appreciate suggestions that build upon their existing preferences, such as new twists on chicken Caesar salads or turkey and avocado wraps. The user may not prefer responses that suggest unhealthy or high-calorie meal prep options, or those that deviate significantly from their established healthy eating habits.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "27016adc",
+    "question_type": "multi-session",
+    "question": "What percentage of the countryside property's price is the cost of the renovations I plan to do on my current house?",
+    "answer": "10%",
+    "abstention_case": false
+  },
+  {
+    "question_id": "6456829e",
+    "question_type": "multi-session",
+    "question": "How many plants did I initially plant for tomatoes and cucumbers?",
+    "answer": "8",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_d12ceb0e",
+    "question_type": "multi-session",
+    "question": "What is the average age of me, my parents, and my grandparents?",
+    "answer": "59.6",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_2f584639",
+    "question_type": "temporal-reasoning",
+    "question": "Which gift did I buy first, the necklace for my sister or the photo album for my mom?",
+    "answer": "the photo album for my mom",
+    "abstention_case": false
+  },
+  {
+    "question_id": "eaca4986",
+    "question_type": "single-session-assistant",
+    "question": "I'm looking back at our previous conversation where you created two sad songs for me. Can you remind me what was the chord progression for the chorus in the second song?",
+    "answer": "C D E F G A B A G F E D C",
+    "abstention_case": false
+  },
+  {
+    "question_id": "dccbc061",
+    "question_type": "single-session-user",
+    "question": "What was my previous stance on spirituality?",
+    "answer": "A staunch atheist",
+    "abstention_case": false
+  },
+  {
+    "question_id": "6aeb4375_abs",
+    "question_type": "knowledge-update",
+    "question": "How many Italian restaurants have I tried in my city?",
+    "answer": "The information provided is not enough. You mentioned trying Korean restaurants but not Italian restaurants.",
+    "abstention_case": true
+  },
+  {
+    "question_id": "2c63a862",
+    "question_type": "temporal-reasoning",
+    "question": "How many days did it take for me to find a house I loved after starting to work with Rachel?",
+    "answer": "14 days. 15 days (including the last day) is also acceptable.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_c27434e8_abs",
+    "question_type": "temporal-reasoning",
+    "question": "Which project did I start first, the Ferrari model or the Porsche 991 Turbo S model?",
+    "answer": "The information provided is not enough. You did not mention starting the Porsche 991 Turbo S model.",
+    "abstention_case": true
+  },
+  {
+    "question_id": "71017276",
+    "question_type": "temporal-reasoning",
+    "question": "How many weeks ago did I meet up with my aunt and receive the crystal chandelier?",
+    "answer": "4",
+    "abstention_case": false
+  },
+  {
+    "question_id": "29f2956b",
+    "question_type": "single-session-user",
+    "question": "How much time do I dedicate to practicing guitar every day?",
+    "answer": "30 minutes",
+    "abstention_case": false
+  },
+  {
+    "question_id": "6cb6f249",
+    "question_type": "multi-session",
+    "question": "How many days did I take social media breaks in total?",
+    "answer": "17 days",
+    "abstention_case": false
+  },
+  {
+    "question_id": "bf659f65",
+    "question_type": "multi-session",
+    "question": "How many music albums or EPs have I purchased or downloaded?",
+    "answer": "3",
+    "abstention_case": false
+  },
+  {
+    "question_id": "4100d0a0",
+    "question_type": "single-session-user",
+    "question": "What is my ethnicity?",
+    "answer": "A mix of Irish and Italian",
+    "abstention_case": false
+  },
+  {
+    "question_id": "b0479f84",
+    "question_type": "single-session-preference",
+    "question": "I've got some free time tonight, any documentary recommendations?",
+    "answer": "The user would prefer documentary recommendations that are similar in style and theme to 'Our Planet', 'Free Solo', and 'Tiger King', which they have previously enjoyed. They might not prefer recommendations of documentaries that are vastly different in tone or subject matter from these titles. The preferred response utilizes the user's previously mentioned viewing history to suggest documentaries that cater to their tastes.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "b5ef892d",
+    "question_type": "multi-session",
+    "question": "How many days did I spend on camping trips in the United States this year?",
+    "answer": "8 days.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "09ba9854_abs",
+    "question_type": "multi-session",
+    "question": "How much will I save by taking the bus from the airport to my hotel instead of a taxi?",
+    "answer": "The information provided is not enough. You did not mention how much will the bus take.",
+    "abstention_case": true
+  },
+  {
+    "question_id": "d7c942c3",
+    "question_type": "knowledge-update",
+    "question": "Is my mom using the same grocery list method as me?",
+    "answer": "Yes.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_4929293b",
+    "question_type": "temporal-reasoning",
+    "question": "What was the the life event of one of my relatives that I participated in a week ago?",
+    "answer": "my cousin's wedding",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_2487a7cb",
+    "question_type": "temporal-reasoning",
+    "question": "Which event did I attend first, the 'Effective Time Management' workshop or the 'Data Analysis using Python' webinar?",
+    "answer": "'Data Analysis using Python' webinar",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_b0863698",
+    "question_type": "temporal-reasoning",
+    "question": "How many days ago did I participate in the 5K charity run?",
+    "answer": "7 days ago. 8 days (including the last day) is also acceptable.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "06f04340",
+    "question_type": "single-session-preference",
+    "question": "What should I serve for dinner this weekend with my homegrown ingredients?",
+    "answer": "The user would prefer dinner suggestions that incorporate their homegrown cherry tomatoes and herbs like basil and mint, highlighting recipes that showcase their garden produce. They might not prefer suggestions that do not utilize these specific ingredients or do not emphasize the use of homegrown elements.",
+    "abstention_case": false
+  },
+  {
+    "question_id": "a3332713",
+    "question_type": "multi-session",
+    "question": "What is the total amount I spent on gifts for my coworker and brother?",
+    "answer": "$200",
+    "abstention_case": false
+  },
+  {
+    "question_id": "gpt4_fe651585",
+    "question_type": "temporal-reasoning",
+    "question": "Who became a parent first, Rachel or Alex?",
+    "answer": "Alex",
+    "abstention_case": false
+  },
+  {
+    "question_id": "1568498a",
+    "question_type": "single-session-assistant",
+    "question": "I'm looking back at our previous chess game and I was wondering, what was the move you made after 27. Kg2 Bd5+?",
+    "answer": "28. Kg3",
+    "abstention_case": false
+  },
+  {
+    "question_id": "6071bd76",
+    "question_type": "knowledge-update",
+    "question": "For the coffee-to-water ratio in my French press, did I switch to more water per tablespoon of coffee, or less?",
+    "answer": "You switched to less water (5 ounces) per tablespoon of coffee.",
+    "abstention_case": false
+  }
+]

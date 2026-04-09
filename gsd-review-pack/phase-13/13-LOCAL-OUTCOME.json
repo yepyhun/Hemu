@@ -1,0 +1,33 @@
+{
+  "phase": "13",
+  "milestone": "v1.7",
+  "build_hypothesis": "constituent-anchor retrieval expansion for bounded temporal/ratio/pairwise shapes",
+  "frozen_target_slice_size": 15,
+  "targeted_cases": 10,
+  "excluded_cases": 5,
+  "targeted_shape_counts": {
+    "temporal_delta_or_elapsed": 2,
+    "days_total_or_days_ago": 3,
+    "ratio_percentage_average": 3,
+    "pairwise_delta_or_anchor_compare": 2
+  },
+  "local_proof": {
+    "focused_tests_passed": 11,
+    "focused_tests_failed": 0,
+    "wider_regression_passed": 137,
+    "wider_regression_failed": 0,
+    "targeted_probe_expanded_cases": 10,
+    "targeted_probe_total_cases": 10,
+    "excluded_probe_expanded_cases": 0,
+    "excluded_probe_total_cases": 5
+  },
+  "representative_seeded_route_shift_cases": [
+    "gpt4_1916e0ea",
+    "27016adc",
+    "2c63a862",
+    "gpt4_fe651585",
+    "6071bd76"
+  ],
+  "answer_surface_availability_improved_on_frozen_slice": "not_measured_in_execute_phase",
+  "verdict": "go"
+}

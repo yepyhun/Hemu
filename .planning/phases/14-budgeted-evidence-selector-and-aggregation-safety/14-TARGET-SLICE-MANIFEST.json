@@ -1,0 +1,38 @@
+{
+  "phase": "14",
+  "milestone": "v1.8",
+  "inherits_safe_tranche_from": "v1.7/13",
+  "target_slice": {
+    "targeted_cases": 10,
+    "excluded_cases": 5,
+    "supported_shape_counts": {
+      "temporal_delta_or_elapsed": 2,
+      "days_total_or_days_ago": 3,
+      "ratio_percentage_average": 3,
+      "pairwise_delta_or_anchor_compare": 2
+    }
+  },
+  "selector_features": [
+    "query_relevance",
+    "operator_fit",
+    "slot_coverage_gain",
+    "supporting_fact_strength",
+    "provenance_strength",
+    "temporal_completeness",
+    "numeric_executability",
+    "redundancy_penalty",
+    "token_cost"
+  ],
+  "aggregation_safety": [
+    "identity_dedupe",
+    "unit_compatibility",
+    "scope_compatibility",
+    "time_window_compatibility",
+    "partial_evidence_abstain"
+  ],
+  "excluded_shapes": [
+    "plain_current_total_count",
+    "plain_current_total_money",
+    "local_sequence_lookup"
+  ]
+}

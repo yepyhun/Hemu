@@ -1,0 +1,27 @@
+{
+  "schema_version": "phase18.outcome.v1",
+  "subset_count": 29,
+  "upstream_taxonomy_counts": {
+    "unsupported_upstream_shape": 3,
+    "admission_rule_miss": 2,
+    "temporal_anchor_seed_miss": 11,
+    "query_shape_not_opened": 10,
+    "entity_scope_binding_miss": 3
+  },
+  "actionable_family_counts": {
+    "stop_rule_or_non_authoritative_path": 5,
+    "query_shape_conditioned_candidate_seeding": 21,
+    "entity_scope_binding_followup": 3
+  },
+  "dominant_atomic_shape": "temporal_anchor_seed_miss",
+  "dominant_atomic_count": 11,
+  "secondary_atomic_shape": "query_shape_not_opened",
+  "secondary_atomic_count": 10,
+  "dominant_actionable_family": "query_shape_conditioned_candidate_seeding",
+  "dominant_actionable_count": 21,
+  "selector_engaged_cases": 0,
+  "verdict": "single_dominant_actionable_family",
+  "next_direction": "query_shape_conditioned_candidate_seeding",
+  "stop_rule": "Do not reopen selector retuning, delivery, ranking, bitemporal, or promotion-gate work until the query-shape-conditioned candidate-seeding family is either built against directly or explicitly falsified.",
+  "note": "No single atomic upstream label dominates overwhelmingly, but the top two labels share one bounded upstream seam: the active path fails to open the right query shape early enough to seed answer-bearing temporal/comparison/numeric candidates into the pool."
+}

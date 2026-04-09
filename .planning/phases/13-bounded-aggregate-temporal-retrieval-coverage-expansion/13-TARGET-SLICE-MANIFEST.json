@@ -1,0 +1,36 @@
+{
+  "phase": "13",
+  "milestone": "v1.7",
+  "source_phase": "12",
+  "source_bucket": "weak_or_partial_evidence",
+  "frozen_target_slice_size": 15,
+  "targeted_cases": [
+    "gpt4_1916e0ea",
+    "09ba9854",
+    "27016adc",
+    "gpt4_d12ceb0e",
+    "2c63a862",
+    "6cb6f249",
+    "b5ef892d",
+    "gpt4_b0863698",
+    "gpt4_fe651585",
+    "6071bd76"
+  ],
+  "excluded_cases": [
+    "f35224e0",
+    "gpt4_d84a3211",
+    "6456829e",
+    "a3332713",
+    "1568498a"
+  ],
+  "targeted_shape_counts": {
+    "temporal_delta_or_elapsed": 2,
+    "days_total_or_days_ago": 3,
+    "ratio_percentage_average": 3,
+    "pairwise_delta_or_anchor_compare": 2
+  },
+  "excluded_shape_counts": {
+    "plain_current_total_count_or_money": 4,
+    "sequence_local_lookup": 1
+  }
+}

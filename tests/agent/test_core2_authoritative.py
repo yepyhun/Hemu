@@ -330,6 +330,60 @@ def test_try_authoritative_answer_dedupes_session_and_turn_aggregate_evidence():
     runtime.shutdown()
 
 
+def test_try_authoritative_answer_sums_social_media_break_days_from_surfaced_sessions(tmp_path):
+    entries = json.loads(DEFAULT_DATASET.read_text(encoding="utf-8"))
+    entry = next(item for item in entries if item.get("question_id") == "6cb6f249")
+    (tmp_path / "memories").mkdir(parents=True, exist_ok=True)
+    _seed_core2_kernel(tmp_path, entry, oracle_only=False)
+
+    runtime = Core2Runtime(str(tmp_path / "core2" / "core2.db"))
+    runtime.initialize("social-media-break-total")
+    packet = runtime.recall(str(entry["question"]), mode="source_supported", operator=None, risk_class="standard", max_items=12)
+
+    resolved = try_authoritative_answer(str(entry["question"]), packet)
+
+    assert resolved is not None
+    assert resolved["winner"] == "17 days"
+    assert resolved["mode"] == "aggregate_count"
+    assert len(resolved["used_item_ids"]) >= 2
+
+    runtime.shutdown()
+
+
+def test_try_authoritative_answer_does_not_short_circuit_partial_camping_duration_query(tmp_path):
+    entries = json.loads(DEFAULT_DATASET.read_text(encoding="utf-8"))
+    entry = next(item for item in entries if item.get("question_id") == "b5ef892d")
+    (tmp_path / "memories").mkdir(parents=True, exist_ok=True)
+    _seed_core2_kernel(tmp_path, entry, oracle_only=False)
+
+    runtime = Core2Runtime(str(tmp_path / "core2" / "core2.db"))
+    runtime.initialize("camping-partial-duration")
+    packet = runtime.recall(str(entry["question"]), mode="source_supported", operator=None, risk_class="standard", max_items=12)
+
+    resolved = try_authoritative_answer(str(entry["question"]), packet)
+
+    assert resolved is None
+
+    runtime.shutdown()
+
+
+def test_try_authoritative_answer_does_not_short_circuit_partial_music_collection_query(tmp_path):
+    entries = json.loads(DEFAULT_DATASET.read_text(encoding="utf-8"))
+    entry = next(item for item in entries if item.get("question_id") == "bf659f65")
+    (tmp_path / "memories").mkdir(parents=True, exist_ok=True)
+    _seed_core2_kernel(tmp_path, entry, oracle_only=False)
+
+    runtime = Core2Runtime(str(tmp_path / "core2" / "core2.db"))
+    runtime.initialize("music-collection-partial")
+    packet = runtime.recall(str(entry["question"]), mode="source_supported", operator=None, risk_class="standard", max_items=12)
+
+    resolved = try_authoritative_answer(str(entry["question"]), packet)
+
+    assert resolved is None
+
+    runtime.shutdown()
+
+
 def test_try_authoritative_answer_does_not_use_english_aggregate_fast_path_for_non_english_query():
     runtime = Core2Runtime(":memory:")
     runtime.initialize("roadtrip-non-english-query")

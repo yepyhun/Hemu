@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-08T11:16:03.209Z",
+  "phase": "19",
+  "phase_name": "Query-Shape Conditioned Candidate Seeding",
+  "phase_dir": ".planning/phases/19-query-shape-conditioned-candidate-seeding",
+  "plan": 2,
+  "task": 1,
+  "total_tasks": 3,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Freeze target subset and engagement criterion",
+      "status": "done",
+      "commit": "1572956f"
+    },
+    {
+      "id": 2,
+      "name": "Replan Phase 19 against hard-38 truth and create execution checkpoint",
+      "status": "done",
+      "commit": "1572956f"
+    },
+    {
+      "id": 3,
+      "name": "Start minimal upstream seed-opening implementation",
+      "status": "in_progress",
+      "progress": "Added query-shape seeding module and thin wiring in hybrid substrate/runtime, but no final tests, proof, or phase execute artifacts yet."
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 4,
+      "name": "Integrate external research findings into Phase 19 seam choice",
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "name": "Add targeted tests and bounded verification for query-shape seeding",
+      "status": "not_started"
+    },
+    {
+      "id": 6,
+      "name": "Write Phase 19 execute artifacts and verdict",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Phase 19 should not continue blind because new external jackpot research may materially change the seam or stop the phase.",
+      "type": "external",
+      "workaround": "Pause now, ingest the research, then either refresh Phase 19 planning or resume execute with the same bounded seam."
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "Paste the new external research findings / jackpot answers.",
+      "context": "Phase 19 is intentionally paused so the new research can reshape the seam choice before more code is written.",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Do not close Phase 19 before the new research arrives.",
+      "rationale": "The phase is mid-execute and the external research may legitimately change the minimal upstream mechanism or stop rule.",
+      "phase": "19"
+    },
+    {
+      "decision": "Keep slice taxonomy as diagnostic/experimental taxonomy, not broad runtime ontology.",
+      "rationale": "This helps targeting and stop-rules without recreating the old system's complexity trap.",
+      "phase": "19"
+    },
+    {
+      "decision": "Treat hard-38 truth as locked gating evidence.",
+      "rationale": "Current paid replay remains 3/38 with retrieval_failure 29/38, selector_engaged_cases 0, and aggregation_safety_abstentions 0.",
+      "phase": "19"
+    }
+  ],
+  "uncommitted_files": [
+    "agent/core2_query_shape_seeding.py",
+    "agent/core2_hybrid_substrate.py",
+    "agent/core2_runtime.py",
+    ".planning/phases/19-query-shape-conditioned-candidate-seeding/19-EXECUTION-CHECKPOINT.md"
+  ],
+  "next_action": "After the user pastes the research, re-evaluate Phase 19 seam choice first; then either refresh `/gsd-plan-phase 19` or continue `/gsd-execute-phase 19` with targeted tests and artifacts.",
+  "context_notes": "Phase 19 is the first phase where the correct move is not more blind retrieval coding but explicit falsification of whether query-shape-conditioned upstream seeding can touch the hard residual bucket at all. Do not confuse local wiring or route notes with real engagement."
+}

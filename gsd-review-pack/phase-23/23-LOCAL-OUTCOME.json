@@ -1,0 +1,45 @@
+{
+  "phase": 23,
+  "milestone": "v1.17",
+  "status": "execute_complete",
+  "supported_family": "duration_total_from_surfaced_fragments",
+  "local_positive_case_ids": [
+    "6cb6f249"
+  ],
+  "local_safe_fallback_case_ids": [
+    "b5ef892d",
+    "bf659f65"
+  ],
+  "targeted_local_tests": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_authoritative.py tests/test_run_agent_core2_authoritative.py -q",
+    "result": "17 passed"
+  },
+  "benchmark_harness_regression": {
+    "command": "./.venv/bin/python -m pytest tests/agent/test_core2_longmemeval_benchmark.py -k 'missing_final_response or latency_abort or gate_status_artifact' -q",
+    "result": "3 passed"
+  },
+  "external_gate": {
+    "attempted": true,
+    "fixed_slice": "same fixed hard ten as v1.15/v1.16",
+    "status": "needs_work",
+    "sample_size_completed": 10,
+    "pass_rate": 0.1,
+    "passed_cases": 1,
+    "failure_patterns": {
+      "passed": 1,
+      "prompt_miss": 9
+    },
+    "failure_families": {
+      "handoff_format": 9
+    },
+    "current_blocker": "handoff_format",
+    "answer_surface_hit_rate": 0.1,
+    "promptless_authoritative_cases": 1
+  },
+  "claims": {
+    "local_improvement": true,
+    "external_improvement_claim": true,
+    "external_success_claim": false
+  },
+  "verdict_reason": "The bounded downstream expansion produced one real fixed-ten pass and removed the execute blocker, but the external gate still lands at 1/10 with handoff-format dominant, so the phase is improved but not remotely complete."
+}

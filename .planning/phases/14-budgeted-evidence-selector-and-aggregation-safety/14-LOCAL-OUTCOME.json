@@ -1,0 +1,29 @@
+{
+  "phase": "14",
+  "milestone": "v1.8",
+  "build_hypothesis": "budgeted evidence selector plus narrow aggregation safety for bounded aggregate-temporal retrieval shapes",
+  "target_slice_origin": "v1.7 safe compositional tranche",
+  "local_proof": {
+    "focused_tests_passed": 7,
+    "focused_tests_failed": 0,
+    "wider_regression_passed": 140,
+    "wider_regression_failed": 0
+  },
+  "selector_observability": {
+    "selector_trace_fields_added": [
+      "selector_expansions",
+      "selector_slot_coverage",
+      "aggregation_safety_abstentions"
+    ],
+    "runtime_notes_added": [
+      "hybrid_budgeted_selector",
+      "hybrid_aggregation_safety_abstain"
+    ]
+  },
+  "bounded_behavior_proved": {
+    "complementary_temporal_anchor_selection": true,
+    "incompatible_numeric_aggregation_abstains": true,
+    "excluded_shapes_reopened": false
+  },
+  "verdict": "go"
+}

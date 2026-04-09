@@ -1,0 +1,14 @@
+{
+  "total_cases": 38,
+  "bucket_counts": {
+    "retrieval_selection": 33,
+    "delivery_prompt_path": 2,
+    "structured_route_unavailable": 3
+  },
+  "dominant_bucket": "retrieval_selection",
+  "dominant_bucket_count": 33,
+  "verdict": "retrieval-dominant",
+  "next_direction": "Residual Retrieval Coverage Gap Map",
+  "stop_rule": "Do not open a Covered-Family Prompt Delivery Bridge build from the current evidence.",
+  "note": "This map is intentionally local and upstream-first: it classifies where the case fails before downstream model judging, so benchmark-level handoff/judge artifacts remain secondary annotations from prior paid reruns."
+}

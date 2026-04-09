@@ -1,0 +1,18 @@
+{
+  "schema_version": "phase17.outcome.v1",
+  "subset_count": 29,
+  "selection_taxonomy_counts": {
+    "no_answer_bearing_selection": 29,
+    "partial_constituent_packet": 0,
+    "anchor_priority_miss": 0,
+    "wrong_subset_selection": 0
+  },
+  "dominant_selection_shape": "no_answer_bearing_selection",
+  "dominant_selection_count": 29,
+  "selector_engaged_cases": 0,
+  "answer_surface_hit_cases_inside_subset": 2,
+  "verdict": "single_dominant_selection_shape",
+  "next_direction": "pre_selector_candidate_pool_followup",
+  "stop_rule": "",
+  "note": "The verified retrieval-failure subset is selection-homogeneous: the active path never surfaces answer-bearing evidence, so a bounded pre-selector candidate-pool follow-up is the only defensible next build direction from this phase."
+}

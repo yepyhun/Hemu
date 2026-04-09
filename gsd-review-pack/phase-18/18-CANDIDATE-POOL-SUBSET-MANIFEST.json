@@ -1,0 +1,42 @@
+{
+  "schema_version": "phase18.subset.v1",
+  "source_phase": "v1.11/17",
+  "source_artifacts": [
+    "17-SELECTION-SUBSET-MANIFEST.json",
+    "17-SELECTION-TRANSITIONS.jsonl",
+    "17-OUTCOME.json"
+  ],
+  "subset_count": 29,
+  "subset_label": "no_answer_bearing_selection",
+  "question_ids": [
+    "06f04340",
+    "1568498a",
+    "19b5f2b3_abs",
+    "27016adc",
+    "29f2956b",
+    "2c63a862",
+    "4100d0a0",
+    "6071bd76",
+    "6aeb4375_abs",
+    "6cb6f249",
+    "76d63226",
+    "a3332713",
+    "b0479f84",
+    "b5ef892d",
+    "b6025781",
+    "c4ea545c",
+    "d7c942c3",
+    "dccbc061",
+    "eaca4986",
+    "f35224e0",
+    "gpt4_1916e0ea",
+    "gpt4_2487a7cb",
+    "gpt4_2f584639",
+    "gpt4_4929293b",
+    "gpt4_5dcc0aab",
+    "gpt4_b0863698",
+    "gpt4_c27434e8_abs",
+    "gpt4_d12ceb0e",
+    "gpt4_d84a3211"
+  ]
+}

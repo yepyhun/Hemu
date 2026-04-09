@@ -1,0 +1,46 @@
+{
+  "schema_version": "phase19.target_subset.v1",
+  "source_phase": "18",
+  "source_artifacts": [
+    ".planning/phases/18-pre-selector-candidate-pool-followup/18-OUTCOME.json",
+    ".planning/phases/18-pre-selector-candidate-pool-followup/18-CANDIDATE-POOL-TRANSITIONS.jsonl",
+    ".planning/phases/19-query-shape-conditioned-candidate-seeding/19-HARD-38-ATTRIBUTION-STATUS.json"
+  ],
+  "target_family": "bounded_decomposition_and_seeding",
+  "selection_rule": "Keep only hard-residual retrieval-failure cases that remain upstream of selector engagement and can be expressed as one of the bounded operator-slot families implemented in Phase 19.",
+  "excluded_families": [
+    "unsupported_upstream_shape",
+    "entity_scope_binding_miss",
+    "admission_rule_miss",
+    "judge_like_only"
+  ],
+  "operator_families": {
+    "temporal_elapsed": [
+      "19b5f2b3_abs",
+      "2c63a862",
+      "6cb6f249",
+      "b5ef892d",
+      "29f2956b"
+    ],
+    "aggregate_numeric": [
+      "27016adc",
+      "a3332713",
+      "f35224e0"
+    ],
+    "current_previous": [
+      "6071bd76",
+      "c4ea545c",
+      "dccbc061"
+    ],
+    "pairwise_compare": [
+      "gpt4_2487a7cb",
+      "gpt4_2f584639",
+      "gpt4_c27434e8_abs"
+    ]
+  },
+  "target_case_count": 14,
+  "notes": [
+    "This manifest is a bounded local-proof slice, not a claim that every query_shape_conditioned_candidate_seeding case is solved by Phase 19.",
+    "The slice keeps only families that map cleanly to the implemented decomposition-and-seeding stack."
+  ]
+}

@@ -3,13 +3,17 @@
 > Public review mirror of the current Core2 memory-kernel branch.  
 > Not a release build, not a standalone product, and not the main development repo.
 
-This repository is a curated mirror of the **Hemu / Hermes Core2** memory-kernel work: the current core modules, the related Core2 tests, and the GSD planning / verification trail that explains what was built, what worked, what failed, and why.
+This repository is a curated mirror of the current **Hemu / Hermes Core2** work as of the latest mirrored planning state. It contains:
+- the current Core2 modules
+- the current Core2 tests
+- the GSD planning and verification trail
+- milestone and phase artifacts through the latest bounded benchmark-facing work
 
 The point of this repo is **reviewability**, not polish. It is here so someone can inspect:
-- the current core files
-- the milestone / phase history
-- the benchmark-facing decisions
-- the architectural dead ends that were explicitly rolled back
+- the current kernel code
+- the experimental trail and benchmark gates
+- the verified bottleneck shifts over time
+- which ideas were kept bounded, which were rolled back, and which remain active
 
 No secrets or API keys are included here.
 
@@ -19,93 +23,105 @@ No secrets or API keys are included here.
 
 Core2 is a **deterministic memory kernel** for durable facts and temporal state inside an agent runtime.
 
-The main design goal is not “better retrieval” in isolation. The goal is:
+The target is not generic “better retrieval.” The target is:
 - stable memory objects
 - provenance and source traceability
-- current / previous / superseded state
-- conflict handling
-- fail-closed answer behavior
-- explicit abstention when support is insufficient
+- temporal and factual consistency
+- explicit state transitions
+- grounded answer surfaces
+- fail-closed behavior when support is not good enough
 
-The intended user experience is that the system remembers in the background and keeps itself consistent, instead of re-reasoning from raw history every time.
+The intended user experience is that the system remembers in the background and answers from structured memory evidence rather than re-deriving everything from raw history every time.
 
 ---
 
 ## What The Project Learned So Far
 
-The development history matters here because the repo is not just a code dump; it is a trail of hypotheses that were tried and measured.
+The development history matters here because this repo is not just a code dump; it is a trail of bounded hypotheses that were tried and measured.
 
 ### v1.0
 
-Established the shipped baseline:
-- deterministic kernel path
+Established the shipped deterministic baseline:
 - paid Hermes-path `10/10` baseline acceptance
 
-### v1.1
+### v1.1 to v1.4
 
-Tested the bounded hybrid branch against the baseline on a broader frozen set:
-- baseline: `31/70`
-- hybrid: `32/70`
-- verdict: directionally better, but not enough for automatic promotion
+Tested the bounded hybrid branch and several early bridge/ranking ideas:
+- broader frozen comparison: baseline `31/70`, bounded hybrid `32/70`
+- authoritative-eligibility bridge and hardening were locally useful
+- a bounded retrieval-ranking borrow stayed locally green but regressed on the hard residual replay (`3/38 -> 2/38`)
+- the ranking path was then explicitly rolled back and postmortemed
 
-### v1.2
+### v1.5 to v1.12
 
-Tried the next bounded breakthrough ideas:
-- authoritative eligibility bridge
-- invariants / acceptance harness
-- narrow noise repair
+Switched to stricter diagnostics on the frozen hard residual set:
+- the real hard replay truth was retrieval-dominant, not delivery-dominant
+- later bounded work localized the main active family to upstream candidate-pool and query-shape misses
+- selector tuning and broad delivery work were intentionally not reopened by inertia
 
-Result:
-- useful hardening
-- no decisive breakthrough on the hard residual failures
+### v1.13 to v1.14
 
-### v1.3
+Tried bounded upstream seeding and then a compromise legacy-primitive borrow:
+- Phase 19 turned query-shape-conditioned candidate seeding into one bounded build
+- a random paid hard gate stayed flat at `0/5`
+- Phase 20 used a fixed representative hard ten plus narrow legacy query-signal borrow
+- strong local proof, but the fixed external ten stayed `0/10`
 
-Tried a bounded retrieval-ranking borrow inside the hybrid seam.
+### v1.15
 
-Locally:
-- green
+Moved one layer deeper than heuristics:
+- proved the fixed hard ten is not primarily blocked by source absence
+- not primarily blocked by gross persist/index loss
+- not primarily blocked by session-local unsearchability
+- dominant seam moved downstream to post-recall answer surface / handoff
 
-On the separate hard residual replay:
-- the ranking-borrow branch scored `2/38` against an earlier `3/38` reference point
+### v1.16
 
-### v1.4
+Localized the downstream seam more precisely on the same fixed ten:
+- dominant miss was missing promptless authoritative bridge
+- where a bridge existed, some payloads were still wrong
+- result was forensic narrowing, not benchmark improvement
 
-Rolled the failed ranking path back out of the active hybrid route and wrote the postmortem instead of pretending the experiment was still promising.
+### v1.17
 
-Current carry-forward recommendation:
-- **Covered-Family Prompt Delivery Bridge**
-
-There is currently **no active milestone** in the mirrored planning state.
+Applied one bounded downstream fix:
+- expanded the authoritative surface/payload bridge narrowly
+- improved the fixed paid hard ten from `0/10` to `1/10`
+- still not enough for a strong claim
+- current verified external status remains **needs work**
 
 ---
 
 ## What Seems To Work
 
-From the current milestone history and local proof work, the project has reasonably solid evidence for:
+From the current milestone history and local proof work, the project has solid or at least bounded evidence for:
 
 - deterministic fact/state handling in covered cases
 - provenance-aware memory objects
-- supersession / conflict-aware state transitions
 - fail-closed answer behavior and abstention contracts
-- bounded hybrid retrieval seam
+- bounded hybrid retrieval and answer-surface seams
 - explicit invariants and acceptance-style hardening
+- useful forensic narrowing from phase-to-phase instead of silent scope drift
 
 ---
 
 ## Where It Is Still Blocked
 
-The main unresolved issue is not “can it store facts at all?”
+The main unresolved issue is not “can it store facts?”
 
-The harder problem is this:
+The hard part is that improvements in one internal seam do not reliably become better final answers on the frozen hard slices.
 
-- improvements in retrieval or internal structure do not reliably become better final answers
-- the remaining hard failures are still dominated by **prompt-path / delivery-path misses**
-- some ideas are locally correct and still not globally decisive
+As of the latest mirrored state:
+- the fixed paid hard ten improved only to `1/10`
+- the dominant blocker is still **handoff / authoritative payload format**
+- residual misses still include `retrieval_failure` and `sufficiency_failure`
 
-In other words: the project has already learned several things that are **not** the breakthrough.
+In other words:
+- several layers are now better understood
+- some local improvements are real
+- but the end-to-end benchmark bottleneck is still not solved
 
-That is why the planning trail is included here. The negative results matter.
+That is why the planning trail is included here. The negative results matter, and the bounded wins matter too.
 
 ---
 
@@ -127,6 +143,8 @@ Both the repo root and [`agent/`](./agent/) contain the current mirrored Core2 f
 - `core2_noise_repair.py`
 - `core2_policy.py`
 - `core2_proof_harness.py`
+- `core2_query_shape_seeding.py`
+- `core2_query_signal_primitives.py`
 - `core2_ranking.py`
 - `core2_routing.py`
 - `core2_runtime.py`
@@ -135,17 +153,17 @@ Both the repo root and [`agent/`](./agent/) contain the current mirrored Core2 f
 
 ### Current Core2 tests
 
-See [`tests/agent/`](./tests/agent/) for the mirrored `test_core2_*` suite.
+See [`tests/agent/`](./tests/agent/) for the mirrored `test_core2_*` suite and [`tests/`](./tests/) for the current benchmark-facing authoritative runner test coverage.
 
 ### GSD / planning artifacts
 
 There are two planning mirrors here:
 
 - [`gsd-review-pack/`](./gsd-review-pack/)  
-  Curated public review pack with mirrored core-state, phase snapshots, references, and milestone archives.
+  Curated review pack with mirrored core-state, milestone snapshots, phase artifacts, and selected references.
 
 - [`.planning/`](./.planning/)  
-  A fuller mirrored planning tree copied from the source project for people who want the raw state and milestone history.
+  A fuller mirrored planning tree copied from the source project for people who want the raw state, milestone history, and exact phase artifacts.
 
 ---
 
@@ -155,39 +173,42 @@ If you want the shortest path to understanding the current state, read this orde
 
 1. [`gsd-review-pack/core-state/PROJECT.md`](./gsd-review-pack/core-state/PROJECT.md)
 2. [`gsd-review-pack/core-state/STATE.md`](./gsd-review-pack/core-state/STATE.md)
-3. [`gsd-review-pack/references/CORE2-AXIOMS.md`](./gsd-review-pack/references/CORE2-AXIOMS.md)
-4. [`gsd-review-pack/phase-06/06-VERIFICATION.md`](./gsd-review-pack/phase-06/06-VERIFICATION.md)
-5. [`gsd-review-pack/phase-09/09-VERIFICATION.md`](./gsd-review-pack/phase-09/09-VERIFICATION.md)
-6. [`gsd-review-pack/phase-10/10-POSTMORTEM.md`](./gsd-review-pack/phase-10/10-POSTMORTEM.md)
-7. [`agent/core2_runtime.py`](./agent/core2_runtime.py)
-8. [`agent/core2_authoritative.py`](./agent/core2_authoritative.py)
-9. [`agent/core2_store.py`](./agent/core2_store.py)
+3. [`gsd-review-pack/core-state/ROADMAP.md`](./gsd-review-pack/core-state/ROADMAP.md)
+4. [`gsd-review-pack/core-state/REQUIREMENTS.md`](./gsd-review-pack/core-state/REQUIREMENTS.md)
+5. [`gsd-review-pack/phase-21/21-VERIFICATION.md`](./gsd-review-pack/phase-21/21-VERIFICATION.md)
+6. [`gsd-review-pack/phase-22/22-VERIFICATION.md`](./gsd-review-pack/phase-22/22-VERIFICATION.md)
+7. [`gsd-review-pack/phase-23/23-VERDICT.md`](./gsd-review-pack/phase-23/23-VERDICT.md)
+8. [`agent/core2_runtime.py`](./agent/core2_runtime.py)
+9. [`agent/core2_authoritative.py`](./agent/core2_authoritative.py)
+10. [`agent/core2_longmemeval_benchmark.py`](./agent/core2_longmemeval_benchmark.py)
 
 If you want the shortest summary:
 
-- baseline exists
-- hybrid helped a bit
-- several plausible ideas were tried
-- ranking was falsified and rolled back
-- the likely remaining leverage is in prompt/delivery-path use of already-covered memory
+- the deterministic baseline exists
+- bounded hybridization gave only small gains
+- several plausible retrieval-side ideas were falsified or narrowed
+- the current hard slice is mostly blocked downstream at authoritative handoff/payload
+- the latest bounded downstream fix improved the fixed hard ten only from `0/10` to `1/10`
 
 ---
 
 ## What Feedback Is Most Useful
 
-The most useful review is not “cool idea” or “graphs are nice”.
+The most useful review is not “nice idea.”
 
 The useful feedback is:
 
 - do the deterministic boundaries make sense?
-- is the provenance / temporal / supersession model coherent?
-- does the planning trail show good experimental discipline, or just benchmark-chasing?
-- is the current carry-forward direction plausible, or is the real bottleneck somewhere else?
+- is the provenance / temporal / answer-surface model coherent?
+- does the planning trail show good experimental discipline?
+- is the current handoff/payload diagnosis the right bottleneck?
+- are the benchmark gates honest enough for external review?
 
 Especially valuable:
 - criticism of the current bottleneck diagnosis
 - places where the deterministic core is too large or too small
 - places where the project is confusing local proof with end-to-end proof
+- better ideas for authoritative payload shaping or handoff contracts
 
 ---
 
@@ -195,41 +216,41 @@ Especially valuable:
 
 As mirrored here:
 
-- latest completed milestone: **v1.4 Ranking Rollback And Postmortem**
-- active milestone: **none**
-- current carry-forward recommendation: **Covered-Family Prompt Delivery Bridge**
+- current milestone: **v1.17 Bounded Authoritative Surface Payload Expansion**
+- current phase: **23 Bounded Authoritative Surface Payload Expansion**
+- planning status: **execute complete, ready for verify**
+- latest fixed paid hard-ten result: **`1/10`**
+- dominant blocker: **handoff-format / authoritative payload**
 
-This is therefore a **review checkpoint**, not a celebration repo.
+This is therefore a **current review checkpoint** with the latest benchmark-facing truth, not a polished release snapshot.
 
 ---
 
 ## Reviewer Note: Concrete Experiment Details
 
-_For Nathan and any reviewer who wants actual dataset samples plus evaluation details rather than only architecture prose._
-
-This section is mainly for reviewers who want actual sample questions and a more concrete explanation of how the evaluation was run.
+For reviewers who want actual benchmark-facing details rather than only architecture prose:
 
 ### What We Actually Evaluate
 
-The important point is that the project is **not** treating this as a raw retrieval benchmark.
+The project is not treating this as a raw retrieval benchmark.
 
-The main benchmark-facing path goes through the full Core2 / Hermes runtime flow:
+The benchmark-facing path goes through the full Core2 / Hermes runtime flow:
 
 1. write-time digestion turns raw interactions into memory objects
 2. query routing chooses a route family
 3. retrieval gathers bounded evidence
-4. the kernel either produces a structured/authoritative answer path or falls back
-5. a judge model checks the final answer against the benchmark answer
+4. answer-surface / authoritative logic tries to produce a grounded answer
+5. the final response is judged against the benchmark answer
 
 So the thing being tested is closer to:
 
-**memory kernel + retrieval + answer delivery path**
+**memory kernel + retrieval + answer-surface / handoff path**
 
-not just “did BM25 or embeddings find something relevant?”
+not just “did search find a relevant string?”
 
 ### Main Evaluation Stages So Far
 
-#### 1. Broader baseline vs hybrid comparison
+#### 1. Broader baseline vs bounded hybrid comparison
 
 Frozen broader set:
 - `70` questions

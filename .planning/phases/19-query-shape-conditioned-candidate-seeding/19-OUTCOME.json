@@ -1,0 +1,47 @@
+{
+  "schema_version": "phase19.outcome.v1",
+  "phase": "19",
+  "milestone": "v1.13",
+  "target_slice_case_count": 14,
+  "target_slice_operator_families": {
+    "temporal_elapsed": 5,
+    "aggregate_numeric": 3,
+    "current_previous": 3,
+    "pairwise_compare": 3
+  },
+  "implementation": {
+    "bounded_decomposition_layer": true,
+    "operator_slot_schema": true,
+    "seed_families": [
+      "temporal_anchor_pair",
+      "aggregate_operand_seed",
+      "previous_current_seed",
+      "pairwise_seed"
+    ],
+    "selector_logic_changed": false,
+    "delivery_logic_changed": false
+  },
+  "local_proof": {
+    "targeted_tests_passed": 14,
+    "targeted_tests_command": ".venv/bin/python -m pytest tests/agent/test_core2_query_shape_candidate_seeding.py tests/agent/test_core2_aggregate_temporal_retrieval_expansion.py tests/agent/test_core2_budgeted_evidence_selector.py -q",
+    "broader_regression_passed": 150,
+    "broader_regression_command": ".venv/bin/python -m pytest tests/agent/test_core2_* tests/test_run_agent_core2_authoritative.py -q",
+    "representative_seed_opening_proven": [
+      "temporal_elapsed",
+      "aggregate_numeric"
+    ],
+    "schema_detection_proven": [
+      "temporal_elapsed",
+      "aggregate_numeric",
+      "current_previous",
+      "pairwise_compare"
+    ],
+    "route_note_contract_proven": true
+  },
+  "verdict": "go_local_replay_worthy",
+  "external_claims": {
+    "hard_38_improved": false,
+    "paid_replay_run_in_phase": false
+  },
+  "note": "Phase 19 now proves a larger but still bounded upstream decomposition-and-seeding seam locally. It does not yet claim external benchmark improvement."
+}

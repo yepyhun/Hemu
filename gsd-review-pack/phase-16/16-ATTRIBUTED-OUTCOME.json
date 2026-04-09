@@ -1,0 +1,31 @@
+{
+  "schema_version": "phase16.outcome.v2",
+  "total_cases": 38,
+  "pass_rate": 0.07894736842105263,
+  "passed": 3,
+  "attributed_passed": 1,
+  "judge_false_positive_passes": 2,
+  "label_counts": {
+    "retrieval_failure": 29,
+    "delivery_surface_failure": 2,
+    "judge_false_negative": 2,
+    "judge_false_positive": 2,
+    "sufficiency_failure": 2,
+    "passed": 1
+  },
+  "stage_counts": {
+    "retrieval": 29,
+    "reasoning_delivery": 2,
+    "judge_like": 4,
+    "sufficiency": 2,
+    "passed": 1
+  },
+  "dominant_label": "retrieval_failure",
+  "dominant_label_count": 29,
+  "dominant_stage": "retrieval",
+  "dominant_stage_count": 29,
+  "verdict": "single_dominant_bucket",
+  "next_direction": "retrieval_selection_followup",
+  "stop_rule": "",
+  "note": "Attributed replay outcome derived from the frozen hard 38 set and the phase-15 attribution contract. Raw benchmark passes may exceed attributed grounded passes when the replay surfaces judge-false-positive cases."
+}

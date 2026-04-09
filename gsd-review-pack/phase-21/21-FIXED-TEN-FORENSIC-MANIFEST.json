@@ -1,0 +1,68 @@
+{
+  "phase": 21,
+  "milestone": "v1.15",
+  "source_manifest": "../20-ten-case-retrieval-opening-forensics-and-primitive-borrow/20-TEN-CASE-MANIFEST.json",
+  "dataset": "/home/lauratom/LongMemEval/data/longmemeval_s_cleaned.json",
+  "cases": [
+    {
+      "question_id": "6cb6f249",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "aggregate_total",
+      "answer_positions": [22, 23]
+    },
+    {
+      "question_id": "b5ef892d",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "aggregate_total_time_window",
+      "answer_positions": [25, 35, 44]
+    },
+    {
+      "question_id": "27016adc",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "aggregate_percentage",
+      "answer_positions": [12, 32]
+    },
+    {
+      "question_id": "2c63a862",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "temporal_after",
+      "answer_positions": [32, 42]
+    },
+    {
+      "question_id": "71017276",
+      "baseline_failure_type": "sufficiency_failure",
+      "shape_family": "temporal_elapsed_ago",
+      "answer_positions": [45]
+    },
+    {
+      "question_id": "gpt4_2487a7cb",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "pairwise_first",
+      "answer_positions": [21, 41]
+    },
+    {
+      "question_id": "gpt4_c27434e8_abs",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "pairwise_first_abs",
+      "answer_positions": [1, 39]
+    },
+    {
+      "question_id": "6071bd76",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "current_previous_switch",
+      "answer_positions": [2, 20]
+    },
+    {
+      "question_id": "c4ea545c",
+      "baseline_failure_type": "retrieval_failure",
+      "shape_family": "current_previous_frequency",
+      "answer_positions": [8, 30]
+    },
+    {
+      "question_id": "bf659f65",
+      "baseline_failure_type": "delivery_surface_failure",
+      "shape_family": "aggregate_count_control",
+      "answer_positions": [4, 33, 48]
+    }
+  ]
+}

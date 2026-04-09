@@ -223,6 +223,28 @@ def _fragment_count_candidate(fragment: str, unit_tokens: set[str]) -> Optional[
     return None
 
 
+def _fragment_duration_days(fragment: str) -> Optional[int]:
+    normalized = _query_text(fragment)
+    compact = normalized.replace("-", " ")
+    if "week long" in compact:
+        return 7
+
+    patterns = (
+        (r"\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+days?\b", 1),
+        (r"\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+weeks?\b", 7),
+        (r"\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+day\s+trip\b", 1),
+        (r"\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+week\s+break\b", 7),
+    )
+    for pattern, multiplier in patterns:
+        match = re.search(pattern, compact, flags=re.IGNORECASE)
+        if not match:
+            continue
+        value = _parse_number(match.group(1))
+        if value is not None:
+            return value * multiplier
+    return None
+
+
 def _current_cue_score(fragment: str) -> int:
     normalized = _query_text(fragment)
     score = 0
@@ -967,11 +989,76 @@ def _extract_generic_remaining_threshold_answer(query: str, items: Iterable[Core
     }
 
 
+def _extract_generic_duration_total_answer(query: str, items: Iterable[Core2RecallItem]) -> Optional[dict[str, object]]:
+    normalized_query = _query_text(query)
+    if " how many " not in normalized_query or " in total " not in normalized_query:
+        return None
+    if " day " not in normalized_query and " days " not in normalized_query:
+        return None
+
+    focus_tokens = _query_focus_tokens(query)
+    if not focus_tokens:
+        return None
+
+    values: List[tuple[int, Core2RecallItem]] = []
+    seen: set[tuple[object, int, str]] = set()
+    for item in items:
+        metadata = dict(item.metadata or {})
+        session_key = metadata.get("session_index") or item.object_id
+        for fragment in _split_fragments(item.content):
+            normalized_fragment = _query_text(fragment)
+            if not _phrase_has_focus(fragment, focus_tokens, minimum=2 if len(focus_tokens) >= 2 else 1):
+                continue
+            if any(marker in normalized_fragment for marker in (" not ", " didn't ", " did not ", " no camping ")):
+                continue
+            if not any(marker in normalized_fragment for marker in (" i ", " i've ", " i even ", " i actually ", " we ", " my ", " our ")):
+                continue
+            value = _fragment_duration_days(fragment)
+            if value is None:
+                continue
+            dedupe_key = (session_key, value, _normalize_token_text(fragment)[:120])
+            if dedupe_key in seen:
+                continue
+            seen.add(dedupe_key)
+            values.append((value, item))
+
+    if len(values) < 2:
+        return None
+    total_days = sum(value for value, _ in values)
+    return {
+        "text": f"Answer: {total_days} days.",
+        "mode": "aggregate_count",
+        "structured": {
+            "kind": "aggregate_count",
+            "count": total_days,
+            "value": str(total_days),
+            "entity_label": _extract_target_phrase(query),
+        },
+        "used_item_ids": [item.object_id for _, item in values],
+        "winner": f"{total_days} days",
+    }
+
+
 def _extract_generic_current_total_answer(query: str, items: Iterable[Core2RecallItem]) -> Optional[dict[str, object]]:
     normalized_query = _query_text(query)
     if " how many " not in normalized_query and " how much " not in normalized_query:
         return None
     if " need to " in normalized_query or " in total " in normalized_query:
+        return None
+    past_action_markers = (
+        " did i ",
+        " purchased ",
+        " downloaded ",
+        " spent ",
+        " took ",
+        " attended ",
+        " visited ",
+        " received ",
+    )
+    current_override_markers = (" so far ", " currently ", " current ", " right now ", " already ")
+    if any(marker in normalized_query for marker in past_action_markers) and not any(
+        marker in normalized_query for marker in current_override_markers
+    ):
         return None
     unit_tokens = _extract_unit_tokens(query)
     query_tokens = _query_focus_tokens(query)
@@ -1376,6 +1463,10 @@ def _resolve_authoritative_payload(query: str, packet: Core2RecallPacket) -> Opt
     generic_remaining_threshold = _extract_generic_remaining_threshold_answer(query, packet.items)
     if generic_remaining_threshold is not None:
         return generic_remaining_threshold
+
+    generic_duration_total = _extract_generic_duration_total_answer(query, packet.items)
+    if generic_duration_total is not None:
+        return generic_duration_total
 
     generic_summed_total = _extract_generic_summed_total_answer(query, packet.items)
     if generic_summed_total is not None:

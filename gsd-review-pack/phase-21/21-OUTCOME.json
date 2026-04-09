@@ -1,0 +1,19 @@
+{
+  "phase": 21,
+  "milestone": "v1.15",
+  "status": "execute_complete",
+  "external_improvement_claim": false,
+  "fixed_ten_cases": 10,
+  "source_answer_session_cases": 10,
+  "persisted_answer_record_cases": 10,
+  "session_local_hit_cases": 10,
+  "global_direct_recall_answer_session_cases": 9,
+  "direct_packet_contains_answer_cases": 3,
+  "external_prompt_miss_cases": 8,
+  "external_handoff_format_miss_cases": 2,
+  "dominant_seam_family": "post_recall_surface_or_handoff",
+  "dominant_seam_cases": 9,
+  "residual_opening_miss_cases": 1,
+  "diagnostic_gotcha": "dataset answer_session_ids are string IDs while seeded Core2 metadata stores numeric session_index positions",
+  "carry_forward_recommendation": "fixed_ten_handoff_surface_forensics"
+}
