@@ -17,18 +17,69 @@ class CoveredFactSpec:
     object_kind: str = "state"
 
 
-_OCCUPATION_QUERY_MARKERS = (" occupation ", " role ", " job ", " profession ", " work ")
+_OCCUPATION_QUERY_MARKERS = (
+    " occupation ",
+    " role ",
+    " job ",
+    " profession ",
+    " work ",
+)
 _PREVIOUS_QUERY_MARKERS = (" previous ", " former ", " prior ", " used to ")
-_RESIDENCE_QUERY_MARKERS = (" where do i live ", " where i live ", " residence ", " home ")
+_RESIDENCE_QUERY_MARKERS = (
+    " where do i live ",
+    " where i live ",
+    " residence ",
+    " home ",
+)
 _TIMEZONE_QUERY_MARKERS = (" timezone ", " time zone ", " tz ")
 _MANAGER_QUERY_MARKERS = (" manager ",)
 _TEAM_QUERY_MARKERS = (" team ",)
-_EVENING_ACTIVITY_QUERY_MARKERS = (" evening ", " activity ", " activities ", " suggest ", " suggestions ", " can i do ")
-_FOOD_DELIVERY_QUERY_MARKERS = (" food delivery ", " delivery service ", " delivery services ", " dominos ", " domino s ", " domino", " uber eats ", " doordash ", " grubhub ")
+_EVENING_ACTIVITY_QUERY_MARKERS = (
+    " evening ",
+    " activity ",
+    " activities ",
+    " suggest ",
+    " suggestions ",
+    " can i do ",
+)
+_FOOD_DELIVERY_QUERY_MARKERS = (
+    " food delivery ",
+    " delivery service ",
+    " delivery services ",
+    " dominos ",
+    " domino s ",
+    " domino",
+    " uber eats ",
+    " doordash ",
+    " grubhub ",
+)
 _COLLECTION_QUERY_MARKERS = (" collection ", " inventory ", " catalog ", " catalogue ")
-_TEMPORAL_ELAPSED_QUERY_MARKERS = (" how many days ", " days had passed ", " finished reading ", " attended ", " local library ", " book reading event ")
-_TRIP_QUERY_MARKERS = (" trip ", " trips ", " road trip ", " travel ", " hike ", " hiking ", " camping ")
-_ORDER_QUERY_MARKERS = (" earliest ", " latest ", " order ", " first ", " last ", " before ", " after ")
+_TEMPORAL_ELAPSED_QUERY_MARKERS = (
+    " how many days ",
+    " days had passed ",
+    " finished reading ",
+    " attended ",
+    " local library ",
+    " book reading event ",
+)
+_TRIP_QUERY_MARKERS = (
+    " trip ",
+    " trips ",
+    " road trip ",
+    " travel ",
+    " hike ",
+    " hiking ",
+    " camping ",
+)
+_ORDER_QUERY_MARKERS = (
+    " earliest ",
+    " latest ",
+    " order ",
+    " first ",
+    " last ",
+    " before ",
+    " after ",
+)
 
 
 COVERED_FACT_SPECS: Dict[str, CoveredFactSpec] = {
@@ -71,7 +122,13 @@ COVERED_FACT_SPECS: Dict[str, CoveredFactSpec] = {
         title="Current residence",
         fact_kind="attribute",
         keywords="residence location city live current home",
-        extraction_patterns=(r"\bi live in\s+([^.!?\n]+)",),
+        extraction_patterns=(
+            r"\bi live in\s+([^.!?\n]+)",
+            r"\bi currently live in\s+([^.!?\n]+)",
+            r"\bi reside in\s+([^.!?\n]+)",
+            r"\bi'm living in\s+([^.!?\n]+)",
+            r"\bi'm currently living in\s+([^.!?\n]+)",
+        ),
         extra_metadata={
             "attribute_key": "residence",
             "temporal_slot": "current",
@@ -243,11 +300,17 @@ def match_query_to_fact_keys(query: str) -> List[str]:
             "event.reading.completed",
             "event.library.book_reading.attended",
         ]
-    if _has_any(normalized_query, _TRIP_QUERY_MARKERS) and _has_any(normalized_query, _ORDER_QUERY_MARKERS):
+    if _has_any(normalized_query, _TRIP_QUERY_MARKERS) and _has_any(
+        normalized_query, _ORDER_QUERY_MARKERS
+    ):
         return ["event.trip.recent"]
-    if " how many " in normalized_query and _has_any(normalized_query, _COLLECTION_QUERY_MARKERS):
+    if " how many " in normalized_query and _has_any(
+        normalized_query, _COLLECTION_QUERY_MARKERS
+    ):
         return ["aggregate.collection.total.current"]
-    if " evening " in normalized_query and _has_any(normalized_query, _EVENING_ACTIVITY_QUERY_MARKERS):
+    if " evening " in normalized_query and _has_any(
+        normalized_query, _EVENING_ACTIVITY_QUERY_MARKERS
+    ):
         return [
             "preference.evening.activities.current",
             "preference.evening.screen_avoid.current",
@@ -258,7 +321,9 @@ def match_query_to_fact_keys(query: str) -> List[str]:
         return ["aggregate.food_delivery_service.recent"]
     if _has_any(normalized_query, _TIMEZONE_QUERY_MARKERS):
         return ["attribute.timezone.current"]
-    if _has_any(normalized_query, _RESIDENCE_QUERY_MARKERS) and not _has_any(normalized_query, _TEAM_QUERY_MARKERS + _MANAGER_QUERY_MARKERS):
+    if _has_any(normalized_query, _RESIDENCE_QUERY_MARKERS) and not _has_any(
+        normalized_query, _TEAM_QUERY_MARKERS + _MANAGER_QUERY_MARKERS
+    ):
         return ["attribute.residence.current"]
     if _has_any(normalized_query, _MANAGER_QUERY_MARKERS):
         return ["relation.manager.current"]

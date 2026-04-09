@@ -104,7 +104,13 @@ def _normalize_search_tokens(text: str) -> List[str]:
 
 def _select_search_terms(raw_tokens: List[str]) -> List[str]:
     for minimum in (3, 2, 1):
-        terms = [term for term in raw_tokens if term and term not in SEARCH_STOPWORDS and (len(term) >= minimum or term.isdigit())]
+        terms = [
+            term
+            for term in raw_tokens
+            if term
+            and term not in SEARCH_STOPWORDS
+            and (len(term) >= minimum or term.isdigit())
+        ]
         if terms:
             return terms
     return []
@@ -156,8 +162,30 @@ class Core2Store:
         self._migrate()
         self._migrate_phase1_notes()
 
+    def _require_connection(self) -> None:
+        """Raise RuntimeError if database connection not established."""
+        if self._conn is None:
+            raise RuntimeError(
+                "Database connection not established. Call connect() first."
+            )
+
+    def begin_transaction(self) -> None:
+        """Begin a transaction for atomic operations."""
+        self._require_connection()
+        self._conn.execute("BEGIN TRANSACTION")
+
+    def commit(self) -> None:
+        """Commit the current transaction."""
+        self._require_connection()
+        self._conn.commit()
+
+    def rollback(self) -> None:
+        """Rollback the current transaction."""
+        self._require_connection()
+        self._conn.rollback()
+
     def _table_exists(self, table_name: str) -> bool:
-        assert self._conn is not None
+        self._require_connection()
         row = self._conn.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
             (table_name,),
@@ -165,7 +193,7 @@ class Core2Store:
         return row is not None
 
     def _migrate(self) -> None:
-        assert self._conn is not None
+        self._require_connection()
         self._conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS core2_raw_archive (
@@ -287,10 +315,12 @@ class Core2Store:
         self._conn.commit()
 
     def _migrate_phase1_notes(self) -> None:
-        assert self._conn is not None
+        self._require_connection()
         if not self._table_exists("core2_notes"):
             return
-        existing = self._conn.execute("SELECT COUNT(*) AS count FROM core2_canonical_truth").fetchone()
+        existing = self._conn.execute(
+            "SELECT COUNT(*) AS count FROM core2_canonical_truth"
+        ).fetchone()
         if existing and int(existing["count"]) > 0:
             return
 
@@ -304,9 +334,13 @@ class Core2Store:
         ).fetchall()
         for row in legacy_rows:
             metadata = _load_json(row["metadata_json"])
-            temporal = build_temporal_fields(row["effective_from"], metadata, row["created_at"])
+            temporal = build_temporal_fields(
+                row["effective_from"], metadata, row["created_at"]
+            )
             namespace_class = classify_namespace(row["namespace"])
-            support_level = derive_support_level(row["namespace"], row["source_type"], temporal)
+            support_level = derive_support_level(
+                row["namespace"], row["source_type"], temporal
+            )
             raw_id = f"raw-{row['object_id']}"
             self._insert_raw_archive(
                 raw_id=raw_id,
@@ -322,7 +356,9 @@ class Core2Store:
                 created_at=row["created_at"],
                 metadata=metadata,
             )
-            object_kind = default_object_kind(row["title"], row["source_type"], metadata)
+            object_kind = default_object_kind(
+                row["title"], row["source_type"], metadata
+            )
             self._insert_canonical_truth(
                 object_id=row["object_id"],
                 object_kind=object_kind,
@@ -333,10 +369,18 @@ class Core2Store:
                 language=row["language"],
                 source_type=row["source_type"],
                 source_raw_id=raw_id,
-                identity_key=compute_identity_key(row["namespace"], object_kind, row["title"], row["content"], metadata),
+                identity_key=compute_identity_key(
+                    row["namespace"],
+                    object_kind,
+                    row["title"],
+                    row["content"],
+                    metadata,
+                ),
                 content=row["content"],
                 support_level=support_level,
-                state_status=derive_initial_state(row["namespace"], metadata, support_level),
+                state_status=derive_initial_state(
+                    row["namespace"], metadata, support_level
+                ),
                 observed_at=temporal["observed_at"],
                 source_created_at=temporal["source_created_at"],
                 effective_from=temporal["effective_from"],
@@ -358,7 +402,7 @@ class Core2Store:
         self._conn = None
 
     def note_count(self) -> int:
-        assert self._conn is not None
+        self._require_connection()
         row = self._conn.execute(
             """
             SELECT COUNT(*) AS count
@@ -369,7 +413,7 @@ class Core2Store:
         return int(row["count"]) if row else 0
 
     def plane_counts(self) -> Dict[str, int]:
-        assert self._conn is not None
+        self._require_connection()
         tables = {
             PLANE_RAW_ARCHIVE: "core2_raw_archive",
             PLANE_CANONICAL_TRUTH: "core2_canonical_truth",
@@ -379,7 +423,9 @@ class Core2Store:
         }
         counts = {}
         for plane, table in tables.items():
-            row = self._conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()
+            row = self._conn.execute(
+                f"SELECT COUNT(*) AS count FROM {table}"
+            ).fetchone()
             counts[plane] = int(row["count"]) if row else 0
         return counts
 
@@ -399,7 +445,7 @@ class Core2Store:
         created_at: str,
         metadata: Dict[str, Any],
     ) -> None:
-        assert self._conn is not None
+        self._require_connection()
         checksum = f"sha1:{uuid4().hex[:12]}"
         self._conn.execute(
             """
@@ -454,7 +500,7 @@ class Core2Store:
         updated_at: str,
         metadata: Dict[str, Any],
     ) -> None:
-        assert self._conn is not None
+        self._require_connection()
         self._conn.execute(
             """
             INSERT INTO core2_canonical_truth (
@@ -505,7 +551,7 @@ class Core2Store:
         object_kind: Optional[str] = None,
         state_status: Optional[str] = None,
     ) -> Dict[str, Any]:
-        assert self._conn is not None
+        self._require_connection()
         payload = dict(metadata or {})
         now = utc_now_iso()
         namespace_class = classify_namespace(namespace)
@@ -513,7 +559,9 @@ class Core2Store:
         temporal = build_temporal_fields(effective_from, payload, now)
         object_kind = object_kind or default_object_kind(title, source_type, payload)
         support_level = derive_support_level(namespace, source_type, temporal)
-        state_status = state_status or derive_initial_state(namespace, payload, support_level)
+        state_status = state_status or derive_initial_state(
+            namespace, payload, support_level
+        )
 
         object_id = f"core2-{uuid4().hex[:12]}"
         raw_id = f"raw-{uuid4().hex[:12]}"
@@ -543,7 +591,9 @@ class Core2Store:
             language=language,
             source_type=source_type,
             source_raw_id=raw_id,
-            identity_key=compute_identity_key(namespace, object_kind, title, content, payload),
+            identity_key=compute_identity_key(
+                namespace, object_kind, title, content, payload
+            ),
             content=content,
             support_level=support_level,
             state_status=state_status,
@@ -578,7 +628,7 @@ class Core2Store:
         modality: str | None = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        assert self._conn is not None
+        self._require_connection()
         payload = dict(metadata or {})
         proposition_id = f"prop-{uuid4().hex[:12]}"
         now = utc_now_iso()
@@ -627,11 +677,15 @@ class Core2Store:
                 commit=False,
             )
         self._conn.commit()
-        return self.get_proposition(proposition_id) or {"proposition_id": proposition_id}
+        return self.get_proposition(proposition_id) or {
+            "proposition_id": proposition_id
+        }
 
     def get_raw_archive(self, raw_id: str) -> Optional[Dict[str, Any]]:
-        assert self._conn is not None
-        row = self._conn.execute("SELECT * FROM core2_raw_archive WHERE raw_id = ?", (raw_id,)).fetchone()
+        self._require_connection()
+        row = self._conn.execute(
+            "SELECT * FROM core2_raw_archive WHERE raw_id = ?", (raw_id,)
+        ).fetchone()
         if row is None:
             return None
         metadata = _load_json(row["metadata_json"])
@@ -662,7 +716,7 @@ class Core2Store:
         source_first: bool = False,
         exact_phrase: bool = False,
     ) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         raw_tokens = _normalize_search_tokens(query)
         cleaned = " ".join(raw_tokens)
         if not cleaned:
@@ -702,15 +756,26 @@ class Core2Store:
             for token in haystack_tokens:
                 token_counts[token] = token_counts.get(token, 0) + 1
             base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
-            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            expanded_hits = sum(
+                min(token_counts.get(term, 0), 2) for term in expanded_terms
+            )
             score = (base_hits * 2.0) + (expanded_hits * 0.5)
             if score <= 0:
                 continue
-            if (source_first or exact_phrase) and len(terms) >= 2 and base_hits <= 0 and expanded_hits < 2:
+            if (
+                (source_first or exact_phrase)
+                and len(terms) >= 2
+                and base_hits <= 0
+                and expanded_hits < 2
+            ):
                 continue
             if exact_phrase and cleaned in normalized_haystack:
                 score += 5.0
-            if source_first and row["source_type"] in {"document_source", "explicit_memory", "builtin_memory"}:
+            if source_first and row["source_type"] in {
+                "document_source",
+                "explicit_memory",
+                "builtin_memory",
+            }:
                 score += 0.8
             if metadata.get("session_id"):
                 score += 0.2
@@ -732,7 +797,13 @@ class Core2Store:
                 }
             )
 
-        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("created_at") or ""), reverse=True)
+        ranked.sort(
+            key=lambda item: (
+                float(item.get("score", 0.0)),
+                item.get("created_at") or "",
+            ),
+            reverse=True,
+        )
         return ranked[:max_items]
 
     def _row_to_canonical(self, row: sqlite3.Row) -> Dict[str, Any]:
@@ -765,14 +836,16 @@ class Core2Store:
         }
 
     def get_canonical_object(self, object_id: str) -> Optional[Dict[str, Any]]:
-        assert self._conn is not None
-        row = self._conn.execute("SELECT * FROM core2_canonical_truth WHERE object_id = ?", (object_id,)).fetchone()
+        self._require_connection()
+        row = self._conn.execute(
+            "SELECT * FROM core2_canonical_truth WHERE object_id = ?", (object_id,)
+        ).fetchone()
         if row is None:
             return None
         return self._row_to_canonical(row)
 
     def get_proposition(self, proposition_id: str) -> Optional[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         row = self._conn.execute(
             "SELECT * FROM core2_derived_propositions WHERE proposition_id = ?",
             (proposition_id,),
@@ -802,8 +875,10 @@ class Core2Store:
             "metadata": _load_json(row["metadata_json"]),
         }
 
-    def list_canonical_objects(self, *, include_inactive: bool = True) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+    def list_canonical_objects(
+        self, *, include_inactive: bool = True
+    ) -> List[Dict[str, Any]]:
+        self._require_connection()
         sql = "SELECT * FROM core2_canonical_truth"
         params: tuple[Any, ...] = ()
         if not include_inactive:
@@ -860,7 +935,9 @@ class Core2Store:
             for token in haystack_tokens:
                 token_counts[token] = token_counts.get(token, 0) + 1
             base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
-            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            expanded_hits = sum(
+                min(token_counts.get(term, 0), 2) for term in expanded_terms
+            )
             score = (base_hits * 2.0) + (expanded_hits * 0.5)
             if score <= 0:
                 continue
@@ -870,7 +947,13 @@ class Core2Store:
             candidate["score"] = max(float(candidate.get("score", 0.0)), float(score))
             ranked.append(candidate)
 
-        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("updated_at") or ""), reverse=True)
+        ranked.sort(
+            key=lambda item: (
+                float(item.get("score", 0.0)),
+                item.get("updated_at") or "",
+            ),
+            reverse=True,
+        )
         return ranked[:max_items]
 
     def search_turn_archive(
@@ -880,7 +963,7 @@ class Core2Store:
         max_items: int,
         session_id: str | None = None,
     ) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         raw_tokens = _normalize_search_tokens(query)
         cleaned = " ".join(raw_tokens)
         if not cleaned:
@@ -918,7 +1001,9 @@ class Core2Store:
             for token in haystack_tokens:
                 token_counts[token] = token_counts.get(token, 0) + 1
             base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
-            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            expanded_hits = sum(
+                min(token_counts.get(term, 0), 2) for term in expanded_terms
+            )
             score = (base_hits * 2.0) + (expanded_hits * 0.5)
             if score <= 0:
                 continue
@@ -937,16 +1022,30 @@ class Core2Store:
                 }
             )
 
-        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("created_at") or ""), reverse=True)
+        ranked.sort(
+            key=lambda item: (
+                float(item.get("score", 0.0)),
+                item.get("created_at") or "",
+            ),
+            reverse=True,
+        )
         return ranked[:max_items]
 
-    def list_records(self, plane_name: str, *, include_inactive: bool = True) -> List[Dict[str, Any]]:
+    def list_records(
+        self, plane_name: str, *, include_inactive: bool = True
+    ) -> List[Dict[str, Any]]:
         if plane_name == PLANE_CANONICAL_TRUTH:
             return self.list_canonical_objects(include_inactive=include_inactive)
         if plane_name == PLANE_DERIVED_PROPOSITIONS:
-            assert self._conn is not None
-            rows = self._conn.execute("SELECT proposition_id FROM core2_derived_propositions ORDER BY updated_at DESC").fetchall()
-            return [self.get_proposition(row["proposition_id"]) for row in rows if self.get_proposition(row["proposition_id"])]
+            self._require_connection()
+            rows = self._conn.execute(
+                "SELECT proposition_id FROM core2_derived_propositions ORDER BY updated_at DESC"
+            ).fetchall()
+            return [
+                self.get_proposition(row["proposition_id"])
+                for row in rows
+                if self.get_proposition(row["proposition_id"])
+            ]
         raise ValueError(f"Unsupported plane for list_records: {plane_name}")
 
     def search_canonical(
@@ -958,7 +1057,7 @@ class Core2Store:
         source_first: bool = False,
         exact_phrase: bool = False,
     ) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         raw_tokens = _normalize_search_tokens(query)
         cleaned = " ".join(raw_tokens)
         if not cleaned:
@@ -979,7 +1078,9 @@ class Core2Store:
         ranked: List[Dict[str, Any]] = []
         for row in rows:
             record = self._row_to_canonical(row)
-            if namespace_classes and record["namespace_class"] not in set(namespace_classes):
+            if namespace_classes and record["namespace_class"] not in set(
+                namespace_classes
+            ):
                 continue
             haystack = " ".join(
                 [
@@ -997,11 +1098,18 @@ class Core2Store:
             for token in haystack_tokens:
                 token_counts[token] = token_counts.get(token, 0) + 1
             base_hits = sum(min(token_counts.get(term, 0), 2) for term in terms)
-            expanded_hits = sum(min(token_counts.get(term, 0), 2) for term in expanded_terms)
+            expanded_hits = sum(
+                min(token_counts.get(term, 0), 2) for term in expanded_terms
+            )
             score = (base_hits * 2.0) + (expanded_hits * 0.5)
             if score <= 0:
                 continue
-            if (source_first or exact_phrase) and len(terms) >= 2 and base_hits <= 0 and expanded_hits < 2:
+            if (
+                (source_first or exact_phrase)
+                and len(terms) >= 2
+                and base_hits <= 0
+                and expanded_hits < 2
+            ):
                 continue
             if exact_phrase and cleaned in normalized_haystack:
                 score += 6
@@ -1009,7 +1117,11 @@ class Core2Store:
                 score += 8
             if source_first and record["support_level"] != "weak_support":
                 score += 1.5
-            if source_first and record["source_type"] in {"document_source", "explicit_memory", "builtin_memory"}:
+            if source_first and record["source_type"] in {
+                "document_source",
+                "explicit_memory",
+                "builtin_memory",
+            }:
                 score += 1.0
             content_length = len(str(record.get("content") or ""))
             if content_length > 1800:
@@ -1042,7 +1154,7 @@ class Core2Store:
         metadata: Optional[Dict[str, Any]] = None,
         commit: bool = True,
     ) -> str:
-        assert self._conn is not None
+        self._require_connection()
         if self._edge_exists(from_id, to_id, edge_type):
             return ""
         edge_id = f"edge-{uuid4().hex[:12]}"
@@ -1051,14 +1163,23 @@ class Core2Store:
             INSERT INTO core2_edges (edge_id, from_plane, from_id, to_plane, to_id, edge_type, created_at, metadata_json)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (edge_id, from_plane, from_id, to_plane, to_id, edge_type, utc_now_iso(), _dump_json(metadata or {})),
+            (
+                edge_id,
+                from_plane,
+                from_id,
+                to_plane,
+                to_id,
+                edge_type,
+                utc_now_iso(),
+                _dump_json(metadata or {}),
+            ),
         )
         if commit:
             self._conn.commit()
         return edge_id
 
     def _edge_exists(self, from_id: str, to_id: str, edge_type: str) -> bool:
-        assert self._conn is not None
+        self._require_connection()
         row = self._conn.execute(
             """
             SELECT edge_id FROM core2_edges
@@ -1069,7 +1190,7 @@ class Core2Store:
         return row is not None
 
     def get_edges(self, record_id: str) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         rows = self._conn.execute(
             """
             SELECT * FROM core2_edges
@@ -1093,7 +1214,7 @@ class Core2Store:
         ]
 
     def get_delivery_views(self, record_id: str) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         rows = self._conn.execute(
             "SELECT * FROM core2_delivery_views WHERE record_id = ? ORDER BY updated_at DESC",
             (record_id,),
@@ -1111,14 +1232,16 @@ class Core2Store:
             for row in rows
         ]
 
-    def get_delivery_view(self, record_id: str, view_kind: str) -> Optional[Dict[str, Any]]:
+    def get_delivery_view(
+        self, record_id: str, view_kind: str
+    ) -> Optional[Dict[str, Any]]:
         for view in self.get_delivery_views(record_id):
             if view["view_kind"] == view_kind:
                 return view
         return None
 
     def get_retrieval_indices(self, record_id: str) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         rows = self._conn.execute(
             """
             SELECT * FROM core2_retrieval_indices
@@ -1151,7 +1274,9 @@ class Core2Store:
         if not fact_keys:
             return []
 
-        requested_keys = {str(value).strip().lower() for value in fact_keys if str(value).strip()}
+        requested_keys = {
+            str(value).strip().lower() for value in fact_keys if str(value).strip()
+        }
         if not requested_keys:
             return []
 
@@ -1172,7 +1297,9 @@ class Core2Store:
                 continue
 
             keywords = _normalize_search_tokens(str(metadata.get("keywords") or ""))
-            aliases = _normalize_search_tokens(" ".join(str(value) for value in metadata.get("value_aliases", [])))
+            aliases = _normalize_search_tokens(
+                " ".join(str(value) for value in metadata.get("value_aliases", []))
+            )
             canonical_value = str(metadata.get("canonical_value") or "").strip().lower()
 
             score = 8.0
@@ -1192,7 +1319,13 @@ class Core2Store:
             candidate["score"] = float(score)
             ranked.append(candidate)
 
-        ranked.sort(key=lambda item: (float(item.get("score", 0.0)), item.get("updated_at") or ""), reverse=True)
+        ranked.sort(
+            key=lambda item: (
+                float(item.get("score", 0.0)),
+                item.get("updated_at") or "",
+            ),
+            reverse=True,
+        )
         return ranked[:max_items]
 
     def record_transition(
@@ -1204,7 +1337,7 @@ class Core2Store:
         *,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
-        assert self._conn is not None
+        self._require_connection()
         transition_id = f"txn-{uuid4().hex[:12]}"
         self._conn.execute(
             """
@@ -1225,7 +1358,7 @@ class Core2Store:
         return transition_id
 
     def get_transitions(self, record_id: str) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+        self._require_connection()
         rows = self._conn.execute(
             "SELECT * FROM core2_transitions WHERE record_id = ? ORDER BY created_at ASC",
             (record_id,),
@@ -1251,7 +1384,7 @@ class Core2Store:
         metadata_patch: Optional[Dict[str, Any]] = None,
         field_updates: Optional[Dict[str, Any]] = None,
     ) -> bool:
-        assert self._conn is not None
+        self._require_connection()
         record = self.get_canonical_object(object_id)
         if record is None:
             return False
@@ -1259,18 +1392,33 @@ class Core2Store:
         now = utc_now_iso()
         metadata = dict(record["metadata"])
         metadata.update(metadata_patch or {})
-        updates = {"state_status": to_state, "updated_at": now, "metadata_json": _dump_json(metadata)}
+        updates = {
+            "state_status": to_state,
+            "updated_at": now,
+            "metadata_json": _dump_json(metadata),
+        }
         updates.update(field_updates or {})
         assignments = ", ".join(f"{column} = ?" for column in updates)
         values = list(updates.values()) + [object_id]
-        self._conn.execute(f"UPDATE core2_canonical_truth SET {assignments} WHERE object_id = ?", values)
-        self.record_transition(object_id, record["state_status"], to_state, reason, metadata=metadata_patch or {})
+        self._conn.execute(
+            f"UPDATE core2_canonical_truth SET {assignments} WHERE object_id = ?",
+            values,
+        )
+        self.record_transition(
+            object_id,
+            record["state_status"],
+            to_state,
+            reason,
+            metadata=metadata_patch or {},
+        )
         self.rebuild_indices_for_object(object_id)
         self._conn.commit()
         return True
 
-    def supersede_object(self, new_object_id: str, old_object_id: str, reason: str) -> bool:
-        assert self._conn is not None
+    def supersede_object(
+        self, new_object_id: str, old_object_id: str, reason: str
+    ) -> bool:
+        self._require_connection()
         new_record = self.get_canonical_object(new_object_id)
         old_record = self.get_canonical_object(old_object_id)
         if new_record is None or old_record is None:
@@ -1311,14 +1459,19 @@ class Core2Store:
         self._conn.commit()
         return True
 
-    def mark_conflict(self, left_object_id: str, right_object_id: str, reason: str) -> bool:
-        assert self._conn is not None
+    def mark_conflict(
+        self, left_object_id: str, right_object_id: str, reason: str
+    ) -> bool:
+        self._require_connection()
         left = self.get_canonical_object(left_object_id)
         right = self.get_canonical_object(right_object_id)
         if left is None or right is None:
             return False
         created = False
-        for src, dst in ((left_object_id, right_object_id), (right_object_id, left_object_id)):
+        for src, dst in (
+            (left_object_id, right_object_id),
+            (right_object_id, left_object_id),
+        ):
             edge_id = self.add_edge(
                 from_plane=PLANE_CANONICAL_TRUTH,
                 from_id=src,
@@ -1330,13 +1483,18 @@ class Core2Store:
             )
             created = created or bool(edge_id)
 
-        for object_id, other_id, record in ((left_object_id, right_object_id, left), (right_object_id, left_object_id, right)):
+        for object_id, other_id, record in (
+            (left_object_id, right_object_id, left),
+            (right_object_id, left_object_id, right),
+        ):
             refs = list(record["metadata"].get("conflict_refs", []))
             if other_id not in refs:
                 refs.append(other_id)
                 self.update_canonical_state(
                     object_id,
-                    "conflicted" if record["state_status"] not in INACTIVE_STATE_STATUSES else record["state_status"],
+                    "conflicted"
+                    if record["state_status"] not in INACTIVE_STATE_STATUSES
+                    else record["state_status"],
                     "conflict_marked",
                     metadata_patch={**record["metadata"], "conflict_refs": refs},
                 )
@@ -1346,9 +1504,13 @@ class Core2Store:
     def archive_object(self, object_id: str, reason: str) -> bool:
         return self.update_canonical_state(object_id, "archived", reason)
 
-    def archive_stale_provisionals(self, *, now: str | None = None, stale_days: int = 30) -> int:
-        assert self._conn is not None
-        reference_time = datetime.fromisoformat((now or utc_now_iso()).replace("Z", "+00:00"))
+    def archive_stale_provisionals(
+        self, *, now: str | None = None, stale_days: int = 30
+    ) -> int:
+        self._require_connection()
+        reference_time = datetime.fromisoformat(
+            (now or utc_now_iso()).replace("Z", "+00:00")
+        )
         cutoff = reference_time - timedelta(days=stale_days)
         rows = self._conn.execute(
             """
@@ -1360,16 +1522,20 @@ class Core2Store:
         for row in rows:
             recorded_at = row["recorded_at"]
             try:
-                recorded_time = datetime.fromisoformat(str(recorded_at).replace("Z", "+00:00"))
+                recorded_time = datetime.fromisoformat(
+                    str(recorded_at).replace("Z", "+00:00")
+                )
             except ValueError:
                 continue
             if recorded_time <= cutoff:
-                if self.update_canonical_state(row["object_id"], "archived", "stale_provisional_demotion"):
+                if self.update_canonical_state(
+                    row["object_id"], "archived", "stale_provisional_demotion"
+                ):
                     archived += 1
         return archived
 
     def rebuild_indices_for_object(self, object_id: str) -> None:
-        assert self._conn is not None
+        self._require_connection()
         record = self.get_canonical_object(object_id)
         if record is None:
             return
@@ -1386,7 +1552,10 @@ class Core2Store:
         index_specs = {
             "lexical": {
                 "index_key": lexical_key,
-                "payload": {"support_level": record["support_level"], "state_status": record["state_status"]},
+                "payload": {
+                    "support_level": record["support_level"],
+                    "state_status": record["state_status"],
+                },
             }
         }
         fact_key = str(metadata.get("fact_key") or "").strip()
@@ -1397,7 +1566,11 @@ class Core2Store:
                     [
                         fact_key,
                         canonical_value,
-                        " ".join(str(alias).strip() for alias in list(metadata.get("value_aliases") or []) if str(alias).strip()),
+                        " ".join(
+                            str(alias).strip()
+                            for alias in list(metadata.get("value_aliases") or [])
+                            if str(alias).strip()
+                        ),
                     ]
                 ).strip(),
                 "payload": {
@@ -1426,7 +1599,15 @@ class Core2Store:
                 INSERT INTO core2_retrieval_indices (index_id, plane_name, record_id, index_kind, index_key, payload_json, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                insert_params=(f"idx-{uuid4().hex[:12]}", PLANE_CANONICAL_TRUTH, object_id, index_kind, spec["index_key"], payload_json, now),
+                insert_params=(
+                    f"idx-{uuid4().hex[:12]}",
+                    PLANE_CANONICAL_TRUTH,
+                    object_id,
+                    index_kind,
+                    spec["index_key"],
+                    payload_json,
+                    now,
+                ),
             )
 
         view_specs = {
@@ -1478,11 +1659,19 @@ class Core2Store:
                 INSERT INTO core2_delivery_views (view_id, plane_name, record_id, view_kind, content, payload_json, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                insert_params=(f"view-{uuid4().hex[:12]}", PLANE_CANONICAL_TRUTH, object_id, view_kind, view_content, payload_json, now),
+                insert_params=(
+                    f"view-{uuid4().hex[:12]}",
+                    PLANE_CANONICAL_TRUTH,
+                    object_id,
+                    view_kind,
+                    view_content,
+                    payload_json,
+                    now,
+                ),
             )
 
     def apply_activation_decay(self) -> int:
-        assert self._conn is not None
+        self._require_connection()
         updated = 0
         for record in self.list_canonical_objects(include_inactive=False):
             activation_score = record["metadata"].get("activation_score")
@@ -1491,18 +1680,27 @@ class Core2Store:
             new_score = max(0.0, float(activation_score) - 0.1)
             metadata = dict(record["metadata"])
             metadata["activation_score"] = round(new_score, 3)
-            if self.update_canonical_state(record["object_id"], record["state_status"], "activation_decay", metadata_patch=metadata):
+            if self.update_canonical_state(
+                record["object_id"],
+                record["state_status"],
+                "activation_decay",
+                metadata_patch=metadata,
+            ):
                 updated += 1
         return updated
 
-    def find_identity_clusters(self, *, include_inactive: bool = True) -> List[List[Dict[str, Any]]]:
+    def find_identity_clusters(
+        self, *, include_inactive: bool = True
+    ) -> List[List[Dict[str, Any]]]:
         clusters: Dict[str, List[Dict[str, Any]]] = {}
         for record in self.list_canonical_objects(include_inactive=include_inactive):
             clusters.setdefault(record["identity_key"], []).append(record)
         return [records for records in clusters.values() if records]
 
-    def add_turn(self, *, session_id: str, user_content: str, assistant_content: str) -> Dict[str, Any]:
-        assert self._conn is not None
+    def add_turn(
+        self, *, session_id: str, user_content: str, assistant_content: str
+    ) -> Dict[str, Any]:
+        self._require_connection()
         turn_id = f"turn-{uuid4().hex[:12]}"
         created_at = utc_now_iso()
         self._conn.execute(
@@ -1515,8 +1713,10 @@ class Core2Store:
         self._conn.commit()
         return {"turn_id": turn_id, "created_at": created_at}
 
-    def find_canonical_by_identity_key(self, identity_key: str, *, include_inactive: bool = True) -> List[Dict[str, Any]]:
-        assert self._conn is not None
+    def find_canonical_by_identity_key(
+        self, identity_key: str, *, include_inactive: bool = True
+    ) -> List[Dict[str, Any]]:
+        self._require_connection()
         sql = "SELECT * FROM core2_canonical_truth WHERE identity_key = ?"
         params: tuple[Any, ...] = (identity_key,)
         if not include_inactive:
@@ -1525,7 +1725,9 @@ class Core2Store:
         rows = self._conn.execute(sql, params).fetchall()
         return [self._row_to_canonical(row) for row in rows]
 
-    def get_related_records(self, object_id: str, *, max_hops: int = 1, limit: int = 4) -> List[Dict[str, Any]]:
+    def get_related_records(
+        self, object_id: str, *, max_hops: int = 1, limit: int = 4
+    ) -> List[Dict[str, Any]]:
         related: List[Dict[str, Any]] = []
         seen = {object_id}
         frontier = [object_id]
@@ -1534,7 +1736,9 @@ class Core2Store:
             next_frontier: List[str] = []
             for current in frontier:
                 for edge in self.get_edges(current):
-                    neighbor = edge["to_id"] if edge["from_id"] == current else edge["from_id"]
+                    neighbor = (
+                        edge["to_id"] if edge["from_id"] == current else edge["from_id"]
+                    )
                     if neighbor in seen:
                         continue
                     seen.add(neighbor)
