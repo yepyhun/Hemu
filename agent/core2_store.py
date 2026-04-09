@@ -169,6 +169,21 @@ class Core2Store:
                 "Database connection not established. Call connect() first."
             )
 
+    def begin_transaction(self) -> None:
+        """Begin a transaction for atomic operations."""
+        self._require_connection()
+        self._conn.execute("BEGIN TRANSACTION")
+
+    def commit(self) -> None:
+        """Commit the current transaction."""
+        self._require_connection()
+        self._conn.commit()
+
+    def rollback(self) -> None:
+        """Rollback the current transaction."""
+        self._require_connection()
+        self._conn.rollback()
+
     def _table_exists(self, table_name: str) -> bool:
         self._require_connection()
         row = self._conn.execute(
