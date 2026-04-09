@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from agent.core2_hybrid_substrate import Core2HybridSubstrate
 from agent.core2_runtime import Core2Runtime
 
 
@@ -105,3 +106,53 @@ def test_hybrid_shadow_mode_keeps_old_path_but_records_trace(tmp_path):
     assert packet_off.abstained == packet_shadow.abstained
     if not packet_off.abstained and not packet_shadow.abstained:
         assert packet_off.items[0].object_id == packet_shadow.items[0].object_id
+
+
+def test_hybrid_session_lookup_keys_ignore_benchmark_question_id_fallback():
+    keys = Core2HybridSubstrate._session_lookup_keys(
+        {"question_id": "gpt4_123", "session_index": "2"}
+    )
+    assert keys == []
+
+
+def test_runtime_recall_forwards_session_id_into_hybrid_search(tmp_path):
+    runtime = _init_runtime(tmp_path, mode="on")
+    captured: dict[str, object] = {}
+
+    def fake_search(query, **kwargs):
+        captured["query"] = query
+        captured["kwargs"] = kwargs
+        return [], {}
+
+    runtime.hybrid_substrate.search = fake_search  # type: ignore[assignment]
+    runtime.store.search_canonical = lambda *args, **kwargs: []  # type: ignore[assignment]
+
+    packet = runtime.recall(
+        "Which trip involved my cousin from Portland?",
+        mode="auto",
+        operator=None,
+        risk_class="standard",
+        max_items=6,
+        session_id="trip-muir",
+    )
+    runtime.shutdown()
+
+    assert captured["query"] == "Which trip involved my cousin from Portland?"
+    assert captured["kwargs"]["session_id"] == "trip-muir"
+    assert packet.abstained is True
+
+
+def test_prepare_selector_candidate_does_not_treat_question_id_as_scope():
+    candidate = Core2HybridSubstrate._prepare_selector_candidate(
+        {
+            "object_id": "obj-1",
+            "title": "evening walk",
+            "content": "I took a long evening walk yesterday.",
+            "metadata": {"question_id": "gpt4_123"},
+            "effective_from": "2026-04-01T12:00:00Z",
+        },
+        query_terms={"evening", "walk"},
+        selector_shape="temporal_pair",
+    )
+    assert candidate is not None
+    assert candidate["scope"] == ""

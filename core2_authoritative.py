@@ -584,6 +584,11 @@ def _is_granular_item(item: Core2RecallItem) -> bool:
     return bool(metadata.get("turn_index")) or "turn" in str(item.title or "").lower()
 
 
+def _item_session_key(item: Core2RecallItem) -> str:
+    metadata = dict(item.metadata or {})
+    return str(metadata.get("session_id") or metadata.get("hybrid_session_id") or item.object_id or "").strip()
+
+
 def _extract_aggregate_distance_answer(query: str, items: Iterable[Core2RecallItem]) -> Optional[dict[str, object]]:
     item_list = list(items)
     requested_trip_count = _query_requested_count(query, "road trip")
@@ -608,9 +613,8 @@ def _extract_aggregate_distance_answer(query: str, items: Iterable[Core2RecallIt
             trip_count = 1
         if trip_count is None:
             continue
-        metadata = dict(item.metadata or {})
         dedupe_key = (
-            metadata.get("session_index"),
+            _item_session_key(item),
             numeric,
         )
         candidate = (trip_count, numeric, item, f"{numeric:,} miles")
@@ -1003,8 +1007,7 @@ def _extract_generic_duration_total_answer(query: str, items: Iterable[Core2Reca
     values: List[tuple[int, Core2RecallItem]] = []
     seen: set[tuple[object, int, str]] = set()
     for item in items:
-        metadata = dict(item.metadata or {})
-        session_key = metadata.get("session_index") or item.object_id
+        session_key = _item_session_key(item)
         for fragment in _split_fragments(item.content):
             normalized_fragment = _query_text(fragment)
             if not _phrase_has_focus(fragment, focus_tokens, minimum=2 if len(focus_tokens) >= 2 else 1):
@@ -1600,13 +1603,39 @@ def _resolved_payload(
     }
 
 
+def _materialize_authoritative_payload(
+    packet: Core2RecallPacket,
+    resolved: dict[str, object],
+) -> dict[str, object]:
+    structured = dict(resolved.get("structured") or {})
+    text = render_answer_surface_text(
+        mode=str(resolved.get("mode") or ""),
+        structured=structured,
+        fallback_text=str(resolved.get("text") or "").strip(),
+    ).strip()
+    return {
+        "text": text,
+        "mode": str(resolved.get("mode") or "").strip(),
+        "used_item_ids": [
+            str(value).strip()
+            for value in (resolved.get("used_item_ids") or [])
+            if str(value).strip()
+        ],
+        "winner": str(resolved.get("winner") or "").strip() or None,
+        "structured": structured,
+    }
+
+
 def build_answer_surface(query: str, packet: Core2RecallPacket) -> Optional[Core2AnswerSurface]:
     covered_query = bool(match_query_to_fact_key(query))
     if str(packet.risk_class or "standard").strip().lower() != "standard":
+        packet.authoritative_payload = None
         return None
     if str(packet.query_family or "").strip().lower() not in {"", QUERY_FAMILY_PERSONAL_RECALL, QUERY_FAMILY_UPDATE_RESOLUTION, QUERY_FAMILY_FACTUAL_SUPPORTED}:
+        packet.authoritative_payload = None
         return None
     if packet.abstained:
+        packet.authoritative_payload = None
         if not covered_query:
             return None
         return Core2AnswerSurface(
@@ -1617,10 +1646,17 @@ def build_answer_surface(query: str, packet: Core2RecallPacket) -> Optional[Core
             fallback_reason=packet.reason or "packet_abstained",
         )
     if not packet.items:
+        packet.authoritative_payload = None
         return None
 
-    resolved = _resolve_authoritative_payload(query, packet)
-    if resolved is None:
+    authoritative_payload = packet.authoritative_payload
+    if authoritative_payload is None:
+        resolved = _resolve_authoritative_payload(query, packet)
+        if resolved is not None:
+            authoritative_payload = _materialize_authoritative_payload(packet, resolved)
+            packet.authoritative_payload = authoritative_payload
+    if authoritative_payload is None:
+        packet.authoritative_payload = None
         fact_key, retrieval_path = _first_surface_metadata(packet.items)
         if not covered_query and not fact_key:
             return None
@@ -1636,23 +1672,23 @@ def build_answer_surface(query: str, packet: Core2RecallPacket) -> Optional[Core
             fallback_reason=packet.reason or "structured_surface_unavailable",
         )
 
-    used_item_ids = [str(value).strip() for value in (resolved.get("used_item_ids") or []) if str(value).strip()]
+    used_item_ids = [
+        str(value).strip()
+        for value in (authoritative_payload.get("used_item_ids") or [])
+        if str(value).strip()
+    ]
     if used_item_ids:
         used_items = [item for item in packet.items if item.object_id in used_item_ids]
     else:
         used_items = list(packet.items[:1])
     fact_key, retrieval_path = _first_surface_metadata(used_items)
-    structured = dict(resolved.get("structured") or {})
-    text = render_answer_surface_text(
-        mode=str(resolved.get("mode") or ""),
-        structured=structured,
-        fallback_text=str(resolved.get("text") or "").strip(),
-    ).strip()
-    summary = _surface_summary(packet, text, str(resolved.get("winner") or ""))
+    structured = dict(authoritative_payload.get("structured") or {})
+    text = str(authoritative_payload.get("text") or "").strip()
+    summary = _surface_summary(packet, text, str(authoritative_payload.get("winner") or ""))
     return Core2AnswerSurface(
-        family=_surface_family(query, packet, resolved, used_items),
+        family=_surface_family(query, packet, authoritative_payload, used_items),
         mode=ANSWER_SURFACE_FACT_PLUS_SUMMARY if summary else ANSWER_SURFACE_FACT_ONLY,
-        answer_mode=str(resolved.get("mode") or "").strip() or None,
+        answer_mode=str(authoritative_payload.get("mode") or "").strip() or None,
         text=text or None,
         structured=structured,
         summary=summary,
@@ -1661,7 +1697,7 @@ def build_answer_surface(query: str, packet: Core2RecallPacket) -> Optional[Core
         fact_key=fact_key,
         retrieval_path=retrieval_path,
         used_item_ids=used_item_ids or [item.object_id for item in used_items],
-        winner=str(resolved.get("winner") or "").strip() or None,
+        winner=str(authoritative_payload.get("winner") or "").strip() or None,
     )
 
 
@@ -1676,12 +1712,19 @@ def try_authoritative_answer(query: str, packet: Core2RecallPacket) -> Optional[
         return None
     if surface.mode == ANSWER_SURFACE_FALLBACK or not str(surface.text or "").strip():
         return None
-    payload = {
-        "text": str(surface.text or "").strip(),
-        "mode": str(surface.answer_mode or surface.family or "").strip(),
-        "used_item_ids": list(surface.used_item_ids),
-        "winner": str(surface.winner or "").strip() or None,
-        "structured": dict(surface.structured or {}),
-        "answer_surface": surface.to_dict(),
+    payload = dict(packet.authoritative_payload or {})
+    payload.update(
+        {
+            "text": str(payload.get("text") or surface.text or "").strip(),
+            "mode": str(payload.get("mode") or surface.answer_mode or surface.family or "").strip(),
+            "used_item_ids": list(payload.get("used_item_ids") or surface.used_item_ids),
+            "winner": str(payload.get("winner") or surface.winner or "").strip() or None,
+            "structured": dict(payload.get("structured") or surface.structured or {}),
+            "answer_surface": surface.to_dict(),
+        }
+    )
+    packet.authoritative_payload = {
+        k: payload[k]
+        for k in ("text", "mode", "used_item_ids", "winner", "structured")
     }
     return payload

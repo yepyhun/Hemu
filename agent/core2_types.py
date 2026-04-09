@@ -127,7 +127,7 @@ ANSWER_SURFACE_SUMMARY_LIMIT = 160
 
 DEFAULT_TOOL_BUDGET_PROFILE = TOOL_BUDGET_PROFILE_COMPACT
 TOOL_PAYLOAD_MODE_DEFAULT = "default"
-TOOL_PAYLOAD_MODE_BENCHMARK_LEAN = "benchmark_lean"
+TOOL_PAYLOAD_MODE_LEAN = "lean"
 
 TOOL_BUDGET_PROFILES: Dict[str, Dict[str, int | bool]] = {
     TOOL_BUDGET_PROFILE_MINIMAL: {
@@ -184,8 +184,7 @@ def _compact_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
         "identity_key",
         "conflict_refs",
         "dataset",
-        "question_id",
-        "session_index",
+        "session_id",
         "turn_index",
         "session_date",
     }
@@ -271,7 +270,7 @@ class Core2RecallItem:
     ) -> Dict[str, Any]:
         cfg = get_tool_budget_profile(profile)
         mode = _payload_mode(payload_mode)
-        if mode == TOOL_PAYLOAD_MODE_BENCHMARK_LEAN:
+        if mode == TOOL_PAYLOAD_MODE_LEAN:
             payload = {
                 "object_id": self.object_id,
                 "title": self.title,
@@ -348,6 +347,7 @@ class Core2RecallPacket:
     conflict_refs: List[str] = field(default_factory=list)
     items: List[Core2RecallItem] = field(default_factory=list)
     answer_surface: Core2AnswerSurface | None = None
+    authoritative_payload: Dict[str, Any] | None = None
     reason: str | None = None
     support_confidence: str | None = None
     temporal_confidence: str | None = None
@@ -415,7 +415,9 @@ class Core2RecallPacket:
             "items": items,
             "answer_surface": answer_surface,
         }
-        if payload_mode == TOOL_PAYLOAD_MODE_BENCHMARK_LEAN:
+        if self.authoritative_payload:
+            payload["authoritative_payload"] = dict(self.authoritative_payload)
+        if payload_mode == TOOL_PAYLOAD_MODE_LEAN:
             lean_payload = {
                 "query": payload["query"],
                 "mode": payload["mode"],
@@ -426,6 +428,12 @@ class Core2RecallPacket:
             }
             if answer_surface:
                 lean_payload["answer_surface"] = answer_surface
+            if self.authoritative_payload:
+                lean_payload["authoritative_payload"] = {
+                    "text": str(self.authoritative_payload.get("text") or "").strip(),
+                    "mode": str(self.authoritative_payload.get("mode") or "").strip(),
+                    "winner": self.authoritative_payload.get("winner"),
+                }
             if not payload["items"]:
                 lean_payload["canonical_value"] = payload["canonical_value"]
                 lean_payload["display_value"] = payload["display_value"]

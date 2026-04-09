@@ -64,7 +64,14 @@ class Core2Runtime:
 
     def queue_prefetch(self, query: str, *, session_id: str = "") -> None:
         key = session_id or self._session_id
-        packet = self.recall(query, mode="compact_memory", operator=None, risk_class="standard", max_items=3)
+        packet = self.recall(
+            query,
+            mode="compact_memory",
+            operator=None,
+            risk_class="standard",
+            max_items=3,
+            session_id=key,
+        )
         if packet.abstained or not packet.items:
             self._prefetch_cache[key] = ""
             return
@@ -105,6 +112,7 @@ class Core2Runtime:
         operator: Optional[str] = None,
         risk_class: str = "standard",
         max_items: int = 6,
+        session_id: str = "",
     ) -> Core2RecallPacket:
         normalized_query = f" {re.sub(r'[^a-z0-9]+', ' ', str(query or '').casefold()).strip()} "
         if max_items < 8 and any(
@@ -114,7 +122,8 @@ class Core2Runtime:
             max_items = 8
         max_items = max(1, min(int(max_items), 12))
         route_plan = build_route_plan(query, mode=mode, operator=operator, risk_class=risk_class, max_items=max_items)
-        results = self._retrieve_candidates(query, route_plan=route_plan)
+        normalized_session_id = str(session_id or "").strip()
+        results = self._retrieve_candidates(query, route_plan=route_plan, session_id=normalized_session_id)
         if not results:
             return self._abstain_packet(
                 query,
@@ -579,7 +588,7 @@ class Core2Runtime:
                 self.store.supersede_object(stored["object_id"], existing["object_id"], reason="write_time_fact_update")
         return self.store.get_canonical_object(stored["object_id"]) or stored
 
-    def _retrieve_candidates(self, query: str, *, route_plan) -> List[Dict[str, Any]]:
+    def _retrieve_candidates(self, query: str, *, route_plan, session_id: str = "") -> List[Dict[str, Any]]:
         # Invariant: covered personal/update queries should hit the write-time fact substrate first.
         # Broader canonical retrieval remains mandatory fallback, not a removed path.
         namespace_classes: Optional[List[str]] = None
@@ -611,6 +620,7 @@ class Core2Runtime:
             hybrid_results, hybrid_trace = self.hybrid_substrate.search(
                 query,
                 route_plan=route_plan,
+                session_id=session_id,
                 max_items=route_plan.retrieval_cap,
                 namespace_classes=namespace_classes,
                 source_first=source_first,
@@ -662,7 +672,12 @@ class Core2Runtime:
 
         if route_plan.query_family == QUERY_FAMILY_PERSONAL_RECALL and is_conversation_reference_query(query):
             route_plan.notes.append("conversation_reference_expand")
-            results = self._expand_conversation_reference_candidates(results, query=query, limit=max(route_plan.retrieval_cap * 3, 8))
+            results = self._expand_conversation_reference_candidates(
+                results,
+                query=query,
+                limit=max(route_plan.retrieval_cap * 3, 8),
+                session_id=session_id,
+            )
 
         if route_plan.query_family in {QUERY_FAMILY_RELATION_MULTIHOP, QUERY_FAMILY_EXPLORATORY_DISCOVERY}:
             expanded = list(results)
@@ -721,22 +736,26 @@ class Core2Runtime:
         *,
         query: str,
         limit: int,
+        session_id: str = "",
     ) -> List[Dict[str, Any]]:
         if not results:
             return results
-        candidate_sessions: List[int] = []
+        candidate_sessions: List[str] = []
+        normalized_session_id = str(session_id or "").strip()
+        if normalized_session_id:
+            candidate_sessions.append(normalized_session_id)
         for record in results[:3]:
             metadata = dict(record.get("metadata") or {})
-            session_index = metadata.get("session_index")
-            if isinstance(session_index, int) and session_index not in candidate_sessions:
-                candidate_sessions.append(session_index)
+            record_session_id = str(metadata.get("session_id") or metadata.get("hybrid_session_id") or "").strip()
+            if record_session_id and record_session_id not in candidate_sessions:
+                candidate_sessions.append(record_session_id)
         if not candidate_sessions:
             return results
 
         expanded = list(results)
         seen_ids = {str(record.get("object_id") or "") for record in expanded}
-        for session_index in candidate_sessions:
-            for candidate in self.store.search_session_records(session_index, query, max_items=limit, turns_only=True):
+        for session_id in candidate_sessions:
+            for candidate in self.store.search_session_records(session_id, query, max_items=limit, turns_only=True):
                 object_id = str(candidate.get("object_id") or "")
                 if not object_id or object_id in seen_ids:
                     continue

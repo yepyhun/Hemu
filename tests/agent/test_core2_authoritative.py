@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import patch
 
 from agent.core2_authoritative import build_answer_surface, try_authoritative_answer
 from agent.core2_longmemeval_benchmark import DEFAULT_DATASET, _seed_core2_kernel
@@ -60,6 +61,40 @@ def test_core2_provider_authoritative_answer_uses_runtime(tmp_path):
     assert resolved is not None
     assert resolved["winner"] == "'The Hate U Give'"
     assert str(resolved["text"]).startswith("Answer: 'The Hate U Give'")
+
+    provider.shutdown()
+
+
+def test_core2_provider_authoritative_answer_forwards_session_id(tmp_path):
+    provider = load_memory_provider("core2")
+    assert provider is not None
+    provider.initialize("provider-authoritative-session", hermes_home=str(tmp_path), platform="cli")
+
+    runtime = provider.runtime
+    assert runtime is not None
+    sentinel_packet = object()
+    captured: dict[str, object] = {}
+
+    def fake_recall(query: str, **kwargs):
+        captured["query"] = query
+        captured["kwargs"] = kwargs
+        return sentinel_packet
+
+    runtime.recall = fake_recall  # type: ignore[assignment]
+
+    with patch("plugins.memory.core2.try_authoritative_answer", return_value={"text": "Answer: ok."}) as mocked:
+        resolved = provider.authoritative_answer("What did we talk about?", session_id="session-xyz")
+
+    assert resolved == {"text": "Answer: ok."}
+    assert captured["query"] == "What did we talk about?"
+    assert captured["kwargs"] == {
+        "mode": "source_supported",
+        "operator": None,
+        "risk_class": "standard",
+        "max_items": 6,
+        "session_id": "session-xyz",
+    }
+    mocked.assert_called_once_with("What did we talk about?", sentinel_packet)
 
     provider.shutdown()
 
@@ -293,7 +328,7 @@ def test_try_authoritative_answer_dedupes_session_and_turn_aggregate_evidence():
         risk_class="standard",
         language="en",
         source_type="document_source",
-        metadata={"session_index": 18},
+        metadata={"session_id": "longmemeval:roadtrip:18"},
     )
     runtime.ingest_note(
         "User asked: I'm glad I could fit in Maroon Lake. Since I've covered a total of 1,800 miles on my recent three road trips, I'm comfortable with the drive.",
@@ -302,7 +337,7 @@ def test_try_authoritative_answer_dedupes_session_and_turn_aggregate_evidence():
         risk_class="standard",
         language="en",
         source_type="document_source",
-        metadata={"session_index": 18, "turn_index": 5},
+        metadata={"session_id": "longmemeval:roadtrip:18", "turn_index": 5},
     )
     runtime.ingest_note(
         "User asked: I just got back from an amazing 4-day trip to Yellowstone National Park with my family last month, where we covered a total of 1,200 miles.",
@@ -311,7 +346,7 @@ def test_try_authoritative_answer_dedupes_session_and_turn_aggregate_evidence():
         risk_class="standard",
         language="en",
         source_type="document_source",
-        metadata={"session_index": 29, "turn_index": 1},
+        metadata={"session_id": "longmemeval:roadtrip:29", "turn_index": 1},
     )
 
     packet = runtime.recall(
@@ -489,5 +524,53 @@ def test_previous_occupation_query_ignores_work_noise_and_prefers_real_role():
     assert packet.items[0].metadata.get("retrieval_path") == "fact_first"
     assert resolved is not None
     assert resolved["winner"].startswith("marketing specialist")
+
+    runtime.shutdown()
+
+
+def test_build_answer_surface_caches_authoritative_payload_for_temporal_elapsed(tmp_path):
+    entries = json.loads(DEFAULT_DATASET.read_text(encoding="utf-8"))
+    entry = next(item for item in entries if item.get("question_id") == "0db4c65d")
+    (tmp_path / "memories").mkdir(parents=True, exist_ok=True)
+    _seed_core2_kernel(tmp_path, entry, oracle_only=False)
+
+    runtime = Core2Runtime(str(tmp_path / "core2" / "core2.db"))
+    runtime.initialize("surface-payload-cache")
+    packet = runtime.recall(str(entry["question"]), mode="source_supported", operator=None, risk_class="standard", max_items=8)
+
+    assert packet.answer_surface is not None
+    assert packet.authoritative_payload is not None
+    assert packet.authoritative_payload["mode"] == "temporal_elapsed"
+    assert packet.authoritative_payload["structured"]["subject_title"]
+    assert packet.answer_surface.structured["subject_title"] == packet.authoritative_payload["structured"]["subject_title"]
+
+    resolved = try_authoritative_answer(str(entry["question"]), packet)
+
+    assert resolved is not None
+    assert resolved["text"] == packet.authoritative_payload["text"]
+    assert resolved["structured"] == packet.authoritative_payload["structured"]
+
+    runtime.shutdown()
+
+
+def test_packet_to_dict_exposes_authoritative_payload_when_available(tmp_path):
+    runtime = Core2Runtime(":memory:")
+    runtime.initialize("payload-to-dict")
+    runtime.ingest_note(
+        "I live in Budapest.",
+        title="profile note",
+        namespace="personal",
+        risk_class="standard",
+        language="en",
+        source_type="document_source",
+    )
+
+    packet = runtime.recall("Where do I live?", mode="source_supported", operator=None, risk_class="standard", max_items=6)
+
+    assert packet.authoritative_payload is not None
+    payload = packet.to_dict(compact=True, tool_payload_mode="lean")
+
+    assert payload["authoritative_payload"]["text"] == "Answer: Budapest."
+    assert payload["authoritative_payload"]["mode"] == "personal_residence"
 
     runtime.shutdown()

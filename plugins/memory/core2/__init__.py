@@ -133,6 +133,7 @@ class Core2MemoryProvider(MemoryProvider):
             operator=None,
             risk_class="standard",
             max_items=6,
+            session_id=session_id or self._session_id,
         )
         return try_authoritative_answer(query, packet)
 
@@ -194,6 +195,7 @@ class Core2MemoryProvider(MemoryProvider):
                 operator=args.get("operator"),
                 risk_class=risk_class,
                 max_items=requested_max_items,
+                session_id=str(kwargs.get("session_id") or self._session_id or ""),
             )
             tool_budget_profile = self._resolve_tool_budget_profile(packet, requested_profile, str(risk_class))
             if explicit_max_items and not requested_profile:

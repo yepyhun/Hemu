@@ -8,6 +8,7 @@ This repository is a curated mirror of the current **Hemu / Hermes Core2** work 
 - the current Core2 tests
 - the GSD planning and verification trail
 - milestone and phase artifacts through the latest bounded benchmark-facing work
+- the latest post-v1.17 cleanup pass on the live Core2 runtime path
 
 The point of this repo is **reviewability**, not polish. It is here so someone can inspect:
 - the current kernel code
@@ -90,6 +91,17 @@ Applied one bounded downstream fix:
 - still not enough for a strong claim
 - current verified external status remains **needs work**
 
+### Post-v1.17 cleanup pass
+
+After the bounded v1.17 change, the live Core2 path was cleaned up further without reframing the benchmark result:
+- repaired session-scoped recall handoff across plugin -> runtime -> hybrid substrate
+- removed benchmark-coupled session lookup leakage from the live runtime path
+- added an explicit `authoritative_payload` contract onto the recall packet so runtime, answer-surface, and plugin authoritative reply all share the same structured payload
+- tightened the answer-surface bridge so it consumes cached payload instead of recomputing a parallel answer shape
+- repaired the local `code-review-graph` workflow so untracked `agent/core2_*` files are indexed during full graph builds
+
+This pass was done because review feedback correctly pointed out that several parts of Core2 were only half-wired: modules were relying on implicit contracts and ad hoc payload rebuilding instead of one shared producer-consumer path.
+
 ---
 
 ## What Seems To Work
@@ -101,6 +113,8 @@ From the current milestone history and local proof work, the project has solid o
 - fail-closed answer behavior and abstention contracts
 - bounded hybrid retrieval and answer-surface seams
 - explicit invariants and acceptance-style hardening
+- a now-explicit authoritative payload contract in the live recall path
+- session-scoped plugin/runtime/hybrid retrieval handoff instead of benchmark-shaped fallback keys
 - useful forensic narrowing from phase-to-phase instead of silent scope drift
 
 ---
@@ -115,6 +129,7 @@ As of the latest mirrored state:
 - the fixed paid hard ten improved only to `1/10`
 - the dominant blocker is still **handoff / authoritative payload format**
 - residual misses still include `retrieval_failure` and `sufficiency_failure`
+- the latest cleanup pass improved local contract correctness and code hygiene, but did not claim a new external benchmark jump
 
 In other words:
 - several layers are now better understood
@@ -189,6 +204,7 @@ If you want the shortest summary:
 - several plausible retrieval-side ideas were falsified or narrowed
 - the current hard slice is mostly blocked downstream at authoritative handoff/payload
 - the latest bounded downstream fix improved the fixed hard ten only from `0/10` to `1/10`
+- the current code mirror also includes a follow-up cleanup pass that reduced live benchmark leakage and replaced some half-wired payload rebuilding with one explicit packet contract
 
 ---
 
@@ -216,11 +232,15 @@ Especially valuable:
 
 As mirrored here:
 
-- current milestone: **v1.17 Bounded Authoritative Surface Payload Expansion**
-- current phase: **23 Bounded Authoritative Surface Payload Expansion**
-- planning status: **execute complete, ready for verify**
+- current planning mirror: **v1.17 / Phase 23**
+- current code mirror: **v1.17 plus post-v1.17 cleanup pass**
+- planning status in the mirrored GSD tree: **execute complete, ready for verify**
 - latest fixed paid hard-ten result: **`1/10`**
 - dominant blocker: **handoff-format / authoritative payload**
+- latest local cleanup pass:
+  - explicit `authoritative_payload` on `Core2RecallPacket`
+  - session-scoped recall forwarding through plugin/runtime/hybrid substrate
+  - graph tooling fixed to index untracked Core2 files during full builds
 
 This is therefore a **current review checkpoint** with the latest benchmark-facing truth, not a polished release snapshot.
 

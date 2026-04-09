@@ -66,6 +66,7 @@ class Core2HybridSubstrate:
         query: str,
         *,
         route_plan,
+        session_id: str,
         max_items: int,
         namespace_classes: Optional[List[str]],
         source_first: bool,
@@ -92,7 +93,8 @@ class Core2HybridSubstrate:
         )
         turn_hits: List[Dict[str, Any]] = []
         if self._allow_turn_scope(route_plan):
-            turn_hits = self.store.search_turn_archive(query, max_items=turn_limit)
+            normalized_session_id = str(session_id or "").strip() or None
+            turn_hits = self.store.search_turn_archive(query, max_items=turn_limit, session_id=normalized_session_id)
 
         seed_raw_hits, seed_turn_hits = self._search_query_shape_seed_variants(
             seed_queries,
@@ -258,10 +260,6 @@ class Core2HybridSubstrate:
         session_id = str(payload.get("session_id") or "").strip()
         if session_id:
             keys.append(session_id)
-        question_id = str(payload.get("question_id") or "").strip()
-        session_index = str(payload.get("session_index") or "").strip()
-        if question_id and session_index:
-            keys.append(f"longmemeval:{question_id}:session:{session_index}")
         return keys
 
     @classmethod
@@ -538,7 +536,7 @@ class Core2HybridSubstrate:
         else:
             operator_fit += quantitative
         unit = str(metadata.get("unit") or cls._infer_unit(record)).strip().lower()
-        scope = str(metadata.get("scope") or metadata.get("question_id") or "").strip().lower()
+        scope = str(metadata.get("scope") or "").strip().lower()
         time_window = str(metadata.get("time_window") or "").strip().lower()
         slot_key = cls._slot_key_for_record(record, selector_shape=selector_shape)
         dedupe_key = str(metadata.get("identity_key") or slot_key or record.get("object_id") or "").strip().lower()
