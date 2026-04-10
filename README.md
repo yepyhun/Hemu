@@ -1,5 +1,6 @@
 # Hemu — Core2 Memory Kernel Review Mirror
 
+ABANDONED PROJECT !!!!!!!!!!!!!!!!!
 > Public review mirror of the current Core2 memory-kernel branch.  
 > Not a release build, not a standalone product, and not the main development repo.
 
